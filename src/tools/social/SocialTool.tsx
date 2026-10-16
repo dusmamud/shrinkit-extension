@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SOCIAL_PRESETS, resizeToPreset, type SocialFitMode } from './socialEngine';
 import { t, type Locale } from '../../lib/i18n/index';
+import { isSupportedInputFile } from '../../lib/image/filenames';
 
 export interface SocialToolProps {
   locale: Locale;
@@ -129,7 +130,7 @@ export default function SocialTool({ locale }: SocialToolProps) {
 
   const handleFile = (next: File | undefined | null) => {
     if (!next) return;
-    if (!next.type.startsWith('image/')) {
+    if (!isSupportedInputFile(next)) {
       setError(t(locale, 'tools.social.errorNotImage'));
       return;
     }

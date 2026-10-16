@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { compressToTargetKb, type TargetFormat } from './targetCompressor';
 import { t, type Locale } from '../../lib/i18n/index';
+import { isSupportedInputFile } from '../../lib/image/filenames';
 
 export interface TargetSizeToolProps {
   targetKb: number;
@@ -135,7 +136,7 @@ export default function TargetSizeTool({ targetKb: targetKbProp, locale }: Targe
 
   const handleFile = (next: File | undefined | null) => {
     if (!next) return;
-    if (!next.type.startsWith('image/')) {
+    if (!isSupportedInputFile(next)) {
       setError(t(locale, 'tools.targetSize.errorNotImage'));
       return;
     }

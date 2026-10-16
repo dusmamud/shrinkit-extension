@@ -128,3 +128,28 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 The ShrinkIt web app (same 100%-client-side approach) lives in a separate repository. This extension reuses its logo and icons, and mirrors its tools — it does not depend on the web app at runtime.
 ```
+
+---
+
+## Testing on laptop
+
+Use this flow to test the extension in real Chrome. The sandbox cannot prove how the popup/editor actually look — only this laptop check can.
+
+```bash
+git pull
+npm install
+npm run build
+```
+
+Then load the built extension in Chrome:
+
+1. Open `chrome://extensions`.
+2. Turn on **Developer mode** (top right).
+3. Click **Load unpacked**.
+4. Select the `.output/chrome-mv3` folder inside this project.
+5. Open the popup from the toolbar, and open the Full Editor (popup → "Open Full Editor", or right-click an image → **Resize with ShrinkIt**).
+6. Check: popup looks like the ShrinkIt web app (not basic/broken), editor header logo is small (not full-screen), all 6 tools render, and a real BMP / AVIF file uploads.
+
+> If popup/editor looks broken, run `npm run check:css`. That guard checks the built CSS actually contains Tailwind utilities. If it fails, the Tailwind wiring is broken again — do not judge the UI until `check:css` passes and you have rebuilt. (Built CSS proof: `npm run check:css` PASS — 53,676 bytes, 3/3 Tailwind markers, logo pinned.)
+
+Supported formats: Input — JPG / JPEG, PNG, GIF, WebP, BMP, AVIF. Output — JPG, PNG, WebP, GIF. SVG is NOT supported.

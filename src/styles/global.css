@@ -9,7 +9,12 @@
   color-scheme: dark;
 }
 body {
-  font-family: 'Poppins', system-ui, sans-serif;
+  font-family:
+    'Poppins',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
 }
 
 /*

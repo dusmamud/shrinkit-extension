@@ -29,15 +29,12 @@ const OFFSCREEN_PAGE = 'offscreen.html';
 const OFFSCREEN_TIMEOUT_MS = 65_000;
 
 // Editor tool slugs accepted for ?tool=. Unknown values fall back to
-// 'main'. The Editor worker owns the canonical tool list.
-const KNOWN_TOOLS = new Set([
-  'main',
-  'compress-50kb',
-  'compress-20kb',
-  'passport',
-  'social',
-  'compare',
-]);
+// 'main'. This set MUST match the Editor's canonical TOOL_PARAM_TO_TAB
+// keys exactly ('main' | 'target50' | 'target20' | 'passport' |
+// 'social' | 'compare'). The old compress-* slugs are NOT accepted:
+// the Editor has no mapping for them, so such a ?tool= URL would
+// silently land on the wrong tab.
+const KNOWN_TOOLS = new Set(['main', 'target50', 'target20', 'passport', 'social', 'compare']);
 
 type OffscreenResultMessage = {
   type: 'SHRINKIT_OFFSCREEN_RESULT';
@@ -106,6 +103,28 @@ function fileNameForDataUrl(dataUrl: string, fallbackBase: string): string {
   };
   const ext = mimeMatch ? (extByMime[mimeMatch[1]] ?? 'png') : 'png';
   return `${fallbackBase}.${ext}`;
+}
+
+// SVG is vector, not raster: the resize engine cannot resize it, so
+// SVG right-clicks must never reach the preload path. Detection is
+// exactly the two signals defined for this handoff: a .svg source URL
+// (query/hash stripped, case-insensitive) or an SVG data-URL MIME.
+// SVG reuses the existing 'unknown' error path deliberately: the
+// Editor only distinguishes 'cors' from a generic failure, and a new
+// 'svg' code would render as the same generic banner without an Editor
+// change (Editor.tsx is owned by another worker). 'unknown' is
+// honest — it shows the generic "could not load" banner, never a
+// success state, and never claims SVG works.
+function isSvgSourceUrl(srcUrl: string): boolean {
+  if (srcUrl.startsWith('data:image/svg+xml')) {
+    return true;
+  }
+  const bare = srcUrl.split(/[?#]/, 1)[0].toLowerCase();
+  return bare.endsWith('.svg');
+}
+
+function isSvgDataUrl(dataUrl: string): boolean {
+  return dataUrl.startsWith('data:image/svg+xml');
 }
 
 function safeTool(value: unknown): string {
@@ -199,6 +218,13 @@ async function handleContextMenuClick(
     return;
   }
 
+  // SVG (data: SVG or a .svg source URL): never preload as resizable.
+  // The engine cannot resize vector images, so open the error Editor.
+  if (isSvgSourceUrl(srcUrl)) {
+    await openErrorEditor('unknown');
+    return;
+  }
+
   // (a) data: URL — already fully in-memory. No fetch needed.
   if (srcUrl.startsWith('data:image/')) {
     const key = `rc-${Date.now()}`;
@@ -214,6 +240,12 @@ async function handleContextMenuClick(
   if (srcUrl.startsWith('http://') || srcUrl.startsWith('https://')) {
     try {
       const { dataUrl, name } = await fetchViaOffscreen(srcUrl);
+      // SVG served from an extensionless URL: the fetched MIME is the
+      // only signal. Discard instead of preloading.
+      if (isSvgDataUrl(dataUrl)) {
+        await openErrorEditor('unknown');
+        return;
+      }
       const key = `rc-${Date.now()}`;
       await chrome.storage.session.set({ [key]: { name, dataUrl } });
       await openEditor({ src: 'rightclick', key, tool: 'main' });
@@ -235,6 +267,11 @@ async function handleContextMenuClick(
       const response = await fetchViaContentScript(tab.id, srcUrl);
       if (!response.ok || typeof response.dataUrl !== 'string') {
         throw new Error(response.error ?? 'content-script-fetch-failed');
+      }
+      // SVG blob: same rule as https: — discard, do not preload.
+      if (isSvgDataUrl(response.dataUrl)) {
+        await openErrorEditor('unknown');
+        return;
       }
       const key = `rc-${Date.now()}`;
       const name =

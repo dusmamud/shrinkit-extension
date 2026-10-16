@@ -155,3 +155,38 @@ i18n catalogs (src/i18n/: en / es / pt) serve every UI surface.
 - No reading browsing history, no content-script scraping, no injecting code into pages beyond the minimal right-click support.
 
 See [docs/PRIVACY.md](docs/PRIVACY.md) and [docs/PERMISSIONS.md](docs/PERMISSIONS.md).
+
+---
+
+## Fix pass 2026-10-17 — Tailwind dead / giant logo / popup / formats / right-click
+
+### Tailwind wiring (read this before touching styles)
+
+Tailwind v4 in this extension works only if **both** halves are in place:
+
+1. **`wxt.config.ts`** wires in Tailwind's Vite plugin. Without it, the build emits CSS with zero Tailwind utilities (this happened once: built editor CSS was ~2.2 KB, no utilities, logo rendered at natural 1024 px full-screen).
+2. **`global.css`** is imported by the popup and editor entrypoints. A surface that does not import it gets no Tailwind classes at all (the popup once did not import it).
+
+Rules:
+
+- Never remove the Tailwind plugin from `wxt.config.ts` or the `global.css` import from an entrypoint without replacing the styling foundation first.
+- Logo sizing must not depend on utilities alone: the editor header logo carries explicit width/height attributes + CSS so a CSS regression cannot blow it up to full-screen again.
+- `npm run check:css` is the fast guard: it checks built CSS actually contains Tailwind utilities. Run it whenever popup/editor "looks broken". (Built CSS proof: `npm run check:css` PASS — 53,676 bytes, 3/3 Tailwind markers, logo pinned.)
+- No Google Fonts in extension pages (Content Security Policy risk) — system fonts only.
+- Static gates (`tsc` / `vitest` / `build`) do NOT prove visual correctness. A visual claim needs built-CSS proof + a real-Chrome check.
+
+### i18n note — custom JSON, NOT `chrome.i18n`
+
+This extension uses **custom JSON catalogs** in `src/i18n/` (`en.json`, `es.json`, `pt.json`) with its own `t()` lookup. It does **NOT** use `chrome.i18n`, and there is no `_locales/` subtree.
+
+Consequence: the manifest must **NOT** set `default_locale`. Setting `default_locale: 'en'` without a `_locales/` subtree makes Chrome refuse to load the extension ("Default locale was specified, but _locales subtree is missing"). If a future change adopts `chrome.i18n`, the `_locales/` subtree must be added in the same change — never set `default_locale` alone.
+
+### Format matrix
+
+| Direction     | Formats                               |
+| ------------- | ------------------------------------- |
+| Input         | JPG / JPEG, PNG, GIF, WebP, BMP, AVIF |
+| Output        | JPG, PNG, WebP, GIF                   |
+| NOT supported | SVG (neither input nor output)        |
+
+All upload/filter paths must use the single shared `isSupportedInputFile` check (extension-based), never an ad-hoc `file.type` prefix check. MIME types can be missing or inconsistent for formats such as BMP / AVIF, so a MIME-only filter wrongly rejects real files and makes SVG handling inconsistent across surfaces. Tool slugs are unified across popup, editor, and right-click flows.

@@ -29,6 +29,7 @@
   "private": true,
   "scripts": {
     "build": "wxt build",
+    "check:css": "node scripts/check-tailwind.mjs",
     "dev": "wxt",
     "format": "prettier --check .",
     "format:write": "prettier --write .",

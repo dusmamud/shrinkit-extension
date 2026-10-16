@@ -172,13 +172,35 @@ function SizeLine({ locale, item }: { locale: Locale; item: QueueItem }) {
   const saved = percentSaved(r.originalBytes, r.outputBytes);
   return (
     <p className="text-xs font-light text-[var(--ed-muted)]">
-      {r.width}×{r.height} · {formatBytes(r.outputBytes)}{' '}
+      {r.width}×{r.height} · {formatBytes(r.originalBytes)} → {formatBytes(r.outputBytes)}{' '}
       <span className={saved >= 0 ? 'text-[var(--ed-success)]' : 'text-[var(--ed-warning)]'}>
         {saved >= 0
           ? `${saved}% ${t(locale, 'result.saved')}`
           : `+${Math.abs(saved)}% ${t(locale, 'result.larger')}`}
       </span>
     </p>
+  );
+}
+
+function CardSizeLine({ locale, item }: { locale: Locale; item: QueueItem }) {
+  const r = item.result;
+  if (!r) return null;
+  const saved = percentSaved(r.originalBytes, r.outputBytes);
+  return (
+    <>
+      <p className="mt-0.5 text-[11px] font-light text-[var(--ed-muted)]">
+        {formatBytes(r.originalBytes)} → {formatBytes(r.outputBytes)}
+      </p>
+      <p
+        className={`text-[11px] font-medium ${
+          saved >= 0 ? 'text-[var(--ed-success)]' : 'text-[var(--ed-warning)]'
+        }`}
+      >
+        {saved >= 0
+          ? `${saved}% ${t(locale, 'result.saved')}`
+          : `+${Math.abs(saved)}% ${t(locale, 'result.larger')}`}
+      </p>
+    </>
   );
 }
 
@@ -388,9 +410,7 @@ export default function ResultPanel({
                   >
                     {item.result?.fileName ?? item.file.name}
                   </p>
-                  <p className="mt-0.5 text-[11px] font-light text-[var(--ed-muted)]">
-                    {item.result ? formatBytes(item.result.outputBytes) : ''}
-                  </p>
+                  <CardSizeLine locale={locale} item={item} />
                 </div>
                 <div className="mt-3 flex w-full min-w-0 items-stretch gap-1.5">
                   <button

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   basenameWithoutExtension,
   outputFileName,
+  isSupportedInputFile,
   isSupportedInputFileName,
   formatBytes,
   percentSaved,
@@ -68,6 +69,27 @@ describe('percentSaved', () => {
     expect(percentSaved(1000, 250)).toBe(75);
     expect(percentSaved(1000, 1500)).toBe(-50);
     expect(percentSaved(0, 100)).toBe(0);
+  });
+});
+
+describe('isSupportedInputFile', () => {
+  it('accepts by extension when MIME is empty', () => {
+    expect(isSupportedInputFile(new File([], 'photo.bmp', { type: '' }))).toBe(true);
+    expect(isSupportedInputFile(new File([], 'photo.avif', { type: '' }))).toBe(true);
+    expect(isSupportedInputFile(new File([], 'photo.PNG', { type: '' }))).toBe(true);
+  });
+  it('accepts by MIME with a matching name', () => {
+    expect(isSupportedInputFile(new File([], 'photo.jpg', { type: 'image/jpeg' }))).toBe(true);
+  });
+  it('rejects SVG by MIME and by extension', () => {
+    expect(isSupportedInputFile(new File([], 'pic.svg', { type: 'image/svg+xml' }))).toBe(false);
+    expect(isSupportedInputFile(new File([], 'pic.svg', { type: '' }))).toBe(false);
+  });
+  it('rejects non-image files', () => {
+    expect(isSupportedInputFile(new File([], 'doc.pdf', { type: 'application/pdf' }))).toBe(false);
+    expect(isSupportedInputFile(new File([], 'note.txt', { type: 'text/plain' }))).toBe(false);
+    expect(isSupportedInputFile(new File([], 'pic.ico', { type: 'image/x-icon' }))).toBe(false);
+    expect(isSupportedInputFile(new File([], 'pic.ico', { type: '' }))).toBe(false);
   });
 });
 

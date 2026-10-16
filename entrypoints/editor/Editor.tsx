@@ -13,6 +13,9 @@ import CompareTool from '../../src/tools/compare/CompareTool';
 export type EditorTab = 'main' | 'target50' | 'target20' | 'passport' | 'social' | 'compare';
 
 const TABS: EditorTab[] = ['main', 'target50', 'target20', 'passport', 'social', 'compare'];
+
+// CANONICAL tool slugs — the background worker aligns ?tool= / right-click
+// routing to these exact values. Do not rename without updating it too.
 const TOOL_PARAM_TO_TAB: Record<string, EditorTab> = {
   main: 'main',
   target50: 'target50',
@@ -86,6 +89,13 @@ async function dataUrlToFile(name: string, dataUrl: string): Promise<File> {
   return new File([blob], name, { type: blob.type || 'image/png' });
 }
 
+// Logo size is enforced THREE ways so it can never explode to the SVG's
+// natural 1024px, even if Tailwind fails to load:
+//  1. width/height attributes (32) — the browser sizes the <img> before CSS.
+//  2. Inline style maxWidth/maxHeight (32) — survives any stylesheet failure.
+//  3. .ed-logo in style.css — plain-CSS fallback alongside Tailwind classes.
+const LOGO_SIZE = 32;
+
 export default function Editor() {
   const [locale, setLocale] = useState<Locale>('en');
   const [theme, setTheme] = useState<Theme>('system');
@@ -132,8 +142,11 @@ export default function Editor() {
           const stored = (await chrome.storage.session.get(key)) as Record<string, unknown>;
           const payload = stored[key] as RightClickPayload | undefined;
           const dataUrl = typeof payload?.dataUrl === 'string' ? payload.dataUrl : null;
+          // Localised fallback filename (site name) — never a hardcoded word.
           const name =
-            typeof payload?.name === 'string' && payload.name.length > 0 ? payload.name : 'image';
+            typeof payload?.name === 'string' && payload.name.length > 0
+              ? payload.name
+              : t(activeLocale, 'site.name');
           if (!dataUrl) throw new Error('missing-payload');
           const file = await dataUrlToFile(name, dataUrl);
           setPreloadedFiles([file]);
@@ -188,23 +201,38 @@ export default function Editor() {
       : 'icons/logo.svg';
 
   return (
-    <div className="min-h-screen bg-[var(--ed-surface)] text-[var(--ed-ink)]">
-      <header className="sticky top-0 z-40 border-b border-[var(--ed-line)] bg-[var(--ed-surface)]/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-[1100px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+    <div className="ed-page min-h-screen bg-[var(--ed-surface)] text-[var(--ed-ink)]">
+      <header className="ed-header sticky top-0 z-40 border-b border-[var(--ed-line)] bg-[var(--ed-surface)]/95 backdrop-blur">
+        <div className="ed-header-inner mx-auto flex w-full max-w-[1100px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <a
             href="editor.html"
-            className="flex items-center gap-2.5"
+            className="ed-brand flex items-center gap-2.5"
             aria-label={t(locale, 'site.name')}
           >
-            <img src={logoSrc} alt="" className="h-8 w-8" aria-hidden="true" />
-            <span className="text-lg font-semibold tracking-tight text-[var(--ed-ink)]">
+            <img
+              src={logoSrc}
+              alt=""
+              aria-hidden="true"
+              width={LOGO_SIZE}
+              height={LOGO_SIZE}
+              style={{
+                width: LOGO_SIZE,
+                height: LOGO_SIZE,
+                maxWidth: LOGO_SIZE,
+                maxHeight: LOGO_SIZE,
+                display: 'block',
+                flexShrink: 0,
+              }}
+              className="ed-logo h-8 w-8"
+            />
+            <span className="ed-brand-name text-lg font-semibold tracking-tight text-[var(--ed-ink)]">
               {t(locale, 'site.name')}
             </span>
           </a>
 
           <nav
             aria-label={t(locale, 'nav.tools')}
-            className="order-3 flex w-full flex-wrap gap-1.5 sm:order-2 sm:w-auto sm:flex-1 sm:justify-center"
+            className="ed-tabs order-3 flex w-full flex-wrap gap-1.5 sm:order-2 sm:w-auto sm:flex-1 sm:justify-center"
           >
             {TABS.map((tab) => {
               const selected = activeTab === tab;
@@ -215,9 +243,9 @@ export default function Editor() {
                   role="tab"
                   aria-selected={selected}
                   onClick={() => setActiveTab(tab)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition sm:px-4 ${
+                  className={`ed-tab rounded-full px-3.5 py-1.5 text-sm font-medium transition sm:px-4 ${
                     selected
-                      ? 'bg-[var(--ed-accent)] text-white'
+                      ? 'ed-tab-active bg-[var(--ed-accent)] text-white'
                       : 'text-[var(--ed-ink-2)] hover:bg-[var(--ed-surface-2)] hover:text-[var(--ed-accent)]'
                   }`}
                 >
@@ -227,7 +255,7 @@ export default function Editor() {
             })}
           </nav>
 
-          <div className="order-2 ml-auto flex items-center gap-2 sm:order-3 sm:ml-0">
+          <div className="ed-header-actions order-2 ml-auto flex items-center gap-2 sm:order-3 sm:ml-0">
             <LanguageSwitcher locale={locale} onChange={handleLocaleChange} />
             <ThemeSwitcher locale={locale} theme={theme} onChange={handleThemeChange} />
             <button
@@ -235,61 +263,75 @@ export default function Editor() {
               onClick={handleOpenOptions}
               title={t(locale, 'ext.open_settings')}
               aria-label={t(locale, 'ext.open_settings')}
-              className="inline-flex items-center gap-1.5 rounded-[6px] border border-[var(--ed-input-line)] px-2.5 py-2 text-sm font-medium text-[var(--ed-ink-2)] transition hover:border-[var(--ed-accent)] hover:text-[var(--ed-accent)]"
+              className="ed-settings-btn inline-flex items-center gap-1.5 rounded-[6px] border border-[var(--ed-input-line)] px-2.5 py-2 text-sm font-medium text-[var(--ed-ink-2)] transition hover:border-[var(--ed-accent)] hover:text-[var(--ed-accent)]"
             >
               <GearIcon size={16} />
-              <span className="hidden md:inline">{t(locale, 'ext.open_settings')}</span>
+              <span className="ed-settings-label hidden md:inline">
+                {t(locale, 'ext.open_settings')}
+              </span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="py-6 sm:py-8">
-        {preloadError && (
-          <div
-            role="alert"
-            className="mx-auto mb-6 flex w-full max-w-[1100px] items-start gap-3 rounded-[6px] bg-[var(--ed-error-soft)] px-4 py-3 text-sm text-[var(--ed-error)]"
-          >
-            <span className="flex-1">{preloadError}</span>
-            <button
-              type="button"
-              onClick={() => setPreloadError(null)}
-              aria-label={t(locale, 'errors.dismiss')}
-              className="transition hover:opacity-70"
+      <main className="ed-main py-6 sm:py-8">
+        <div className="ed-main-inner mx-auto w-full max-w-[1100px] px-4">
+          {preloadError && (
+            <div
+              role="alert"
+              className="ed-banner-error mb-6 flex w-full items-start gap-3 rounded-[6px] bg-[var(--ed-error-soft)] px-4 py-3 text-sm text-[var(--ed-error)]"
             >
-              <CloseIcon size={16} />
-            </button>
-          </div>
-        )}
+              <span className="flex-1">{preloadError}</span>
+              <button
+                type="button"
+                onClick={() => setPreloadError(null)}
+                aria-label={t(locale, 'errors.dismiss')}
+                className="ed-banner-dismiss transition hover:opacity-70"
+              >
+                <CloseIcon size={16} />
+              </button>
+            </div>
+          )}
 
-        {preloadedFiles && preloadedFiles.length > 0 && activeTab !== 'main' && (
-          <div className="mx-auto mb-6 flex w-full max-w-[1100px] flex-wrap items-center gap-3 rounded-[6px] border border-[var(--ed-pill-line)] bg-[var(--ed-pill-bg)] px-4 py-3 text-sm text-[var(--ed-pill-text)]">
-            <span className="flex-1">
-              {t(locale, 'ext.right_click_title')} — {preloadedFiles[0]?.name}
-            </span>
-            <button
-              type="button"
-              onClick={() => setActiveTab('main')}
-              className="rounded-[6px] bg-[var(--ed-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--ed-accent-hover)]"
-            >
-              {t(locale, 'nav.resize')}
-            </button>
-          </div>
-        )}
+          {preloadedFiles && preloadedFiles.length > 0 && activeTab !== 'main' && (
+            <div className="ed-banner-info mb-6 flex w-full flex-wrap items-center gap-3 rounded-[6px] border border-[var(--ed-pill-line)] bg-[var(--ed-pill-bg)] px-4 py-3 text-sm text-[var(--ed-pill-text)]">
+              <span className="flex-1">
+                {t(locale, 'ext.right_click_title')} — {preloadedFiles[0]?.name}
+              </span>
+              <button
+                type="button"
+                onClick={() => setActiveTab('main')}
+                className="ed-banner-btn rounded-[6px] bg-[var(--ed-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--ed-accent-hover)]"
+              >
+                {/* No dedicated go-to-main key exists in the message catalogs;
+                    nav.resize is the localised label for the Main tool. */}
+                {t(locale, 'nav.resize')}
+              </button>
+            </div>
+          )}
 
-        {ready && activeTab === 'main' && (
-          <MainResizer
-            locale={locale}
-            initialFiles={preloadedFiles}
-            onInitialFilesConsumed={() => setPreloadedFiles(null)}
-          />
-        )}
+          {/* Never a blank page: while settings/params load, show a
+              localised loading state instead of an empty main area. */}
+          {!ready && (
+            <div className="ed-loading" role="status" aria-live="polite">
+              {t(locale, 'ext.processing')}
+            </div>
+          )}
 
-        {ready && activeTab === 'target50' && <TargetSizeTool targetKb={50} locale={locale} />}
-        {ready && activeTab === 'target20' && <TargetSizeTool targetKb={20} locale={locale} />}
-        {ready && activeTab === 'passport' && <PassportTool locale={locale} />}
-        {ready && activeTab === 'social' && <SocialTool locale={locale} />}
-        {ready && activeTab === 'compare' && <CompareTool locale={locale} />}
+          {ready && activeTab === 'main' && (
+            <MainResizer
+              locale={locale}
+              initialFiles={preloadedFiles}
+              onInitialFilesConsumed={() => setPreloadedFiles(null)}
+            />
+          )}
+
+          {ready && activeTab === 'target50' && <TargetSizeTool targetKb={50} locale={locale} />}
+          {ready && activeTab === 'target20' && <TargetSizeTool targetKb={20} locale={locale} />}
+          {ready && activeTab === 'passport' && <PassportTool locale={locale} />}
+          {ready && activeTab === 'social' && <SocialTool locale={locale} />}
+          {ready && activeTab === 'compare' && <CompareTool locale={locale} />}
+        </div>
       </main>
     </div>
   );

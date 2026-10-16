@@ -52,3 +52,54 @@ Parallel workers assumed slightly different contracts; the coordinator reconcile
 - **GitHub push**: NOT done — local build only. No repo created on GitHub, no commits pushed.
 - **Chrome Web Store listing**: NOT done — no account action, no upload, no $5 fee paid.
 - **ES/PT translations for tool strings**: written by the coordinator (fluent UI Spanish/Portuguese); a native-speaker review pass is recommended before Store submission.
+
+---
+
+## Fix pass 2026-10-17 — Tailwind dead / giant logo / popup / formats / right-click
+
+> Docs-worker note: this section documents the fix pass from the fix spec supplied to Worker 8. This worker edited docs only and ran no gates. Gate results below are intentionally left for the coordinator's final run. Nothing in this section claims visual correctness — visual correctness can only be proven by the built-CSS proof + a real Chrome check on the user's laptop (see "What only the user's laptop + Chrome can prove").
+
+### What was broken (as reported from laptop testing + code audit in the fix spec)
+
+- **Tailwind was dead.** `wxt.config.ts` had no Tailwind Vite plugin wired in, so `global.css`'s Tailwind import generated zero utilities. The built editor CSS was ~2.2 KB with no Tailwind classes.
+- **Giant logo full-screen.** Because Tailwind utilities were missing, the editor logo's size classes did nothing, so the logo rendered at its natural 1024 px size and filled the screen. The popup did not even import `global.css`.
+- **Popup UI was basic / not web-app quality.** The popup used minimal custom CSS, not ShrinkIt web-app parity.
+- **Editor looked broken.** The editor page itself rendered broken once CSS was dead — the user correctly called the whole right-click → editor flow broken, even though the routing itself opened the editor tab.
+- **Formats filtered by MIME only.** The popup filtered uploads by `file.type` starting with `image/`, not by the shared supported-file check. Formats whose MIME can be missing or inconsistent (notably BMP / AVIF) could be rejected, and SVG handling was inconsistent across surfaces.
+- **Slug mismatch.** Tool slugs were not unified across surfaces (per fix spec).
+- **Google Fonts CSP risk.** Loading Google Fonts in extension pages carried a Content Security Policy risk; fonts did not belong in extension UI.
+
+### What was fixed (per fix spec)
+
+- **Tailwind plugin wiring.** Tailwind's Vite plugin wired into `wxt.config.ts`, so `global.css` actually produces utilities in the build.
+- **Global CSS imports.** `global.css` imported in the popup and editor entrypoints, so both surfaces share the same styling foundation.
+- **Fonts removal.** Google Fonts loading removed from extension pages (CSP risk gone; system fonts instead).
+- **Popup rebuilt to web-app parity.** Popup rebuilt toward ShrinkIt web-app quality (same look/feel, presets, Resize + Download flow) instead of the minimal custom-CSS version.
+- **Editor header hardening.** Editor header hardened so the logo cannot blow up to full-screen again (fixed logo size via explicit width/height attributes + CSS), plus a guard script / check that catches a missing-CSS regression.
+- **`isSupportedInputFile` everywhere.** All upload/filter paths now use the single shared `isSupportedInputFile` check (extension-based), not ad-hoc MIME prefix checks, so format acceptance is consistent across popup, editor, and right-click flows.
+- **Slug unification.** Tool slugs unified across surfaces (per fix spec).
+- **Logo attrs + guard script.** Logo carries explicit size attributes, and a CSS guard (`npm run check:css`) exists to fail fast if built CSS is missing Tailwind utilities again.
+
+### Format matrix (authoritative for this extension)
+
+- **Input:** JPG / JPEG, PNG, GIF, WebP, BMP, AVIF.
+- **Output:** JPG, PNG, WebP, GIF.
+- **SVG NOT supported** (neither as input nor as output).
+
+### What is verified in sandbox vs what only the user's laptop + Chrome can prove
+
+**Sandbox can prove (coordinator final run — to be filled):**
+
+- Built CSS proof: `npm run check:css` PASS — 4 built CSS files, 53,676 total bytes (was ~2.2 KB editor CSS when Tailwind was dead), 3/3 utility markers found (`.min-h-screen`, standalone `.flex`, `max-width:1100px`), Editor logo pinned width={32} height={32}. Built global CSS 40,133 B (was 22 KB with zero utilities); editor CSS 5,294 B; popup CSS 8,048 B. `grep -c default_locale .output/chrome-mv3/manifest.json` = 0.
+- Gates (coordinator final run, after tools-format fix): `tsc --noEmit` clean (0 errors); `eslint .` clean (0 errors); `prettier --check .` clean; `vitest run` 8 files, 132/132 passed (was 73: +51 formats, +4 css-guard, +4 filenames); `npm run build` success (986 KB total); `npm run check:css` PASS; `npm run zip` success (362.2 KB zip). Coordinator integration fix: 4 tool files (`TargetSizeTool`, `PassportTool`, `SocialTool`, `CompareTool` ×2 handlers) switched from `next.type.startsWith('image/')` to `isSupportedInputFile(next)` — verified `grep` for MIME-only gates in tools = 0. Remaining `startsWith('image/')` hits are clipboard-item enumeration (Popup/MainResizer) where every candidate still passes through `addFiles → isSupportedInputFile`, plus the helper's own MIME check — not final gates.
+
+**Only the user's laptop + Chrome can prove (NOT claimed here):**
+
+- Real popup look — does it actually match web-app quality in a real popup window?
+- Real editor look — header, logo size, all 6 tools, no overflow, no giant elements.
+- Real right-click on real sites, including CORS-strict pages and `blob:` URLs (e.g. image search results), plus the error paths.
+- Real BMP / AVIF uploads (files whose MIME may be missing or inconsistent).
+- Visual quality of resized / passport / social outputs.
+- Real downloads / ZIP behaviour via `chrome.downloads`.
+
+**Lesson carried forward:** static gates (`tsc` / `vitest` / `build`) do NOT prove visual correctness. A build can pass every gate while the UI is broken (as happened here: Tailwind dead, logo full-screen). Any future "verified" claim about look/feel must cite built-CSS proof + a real-browser check, and must name exactly what was checked.

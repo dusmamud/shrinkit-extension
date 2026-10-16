@@ -105,6 +105,260 @@ body {
   }
 }
 
+/* --- Editor shell (header / main) ------------------------------------ */
+/* Plain-CSS layout for the editor shell. Every rule here mirrors the
+   Tailwind classes on Editor.tsx, so the header and main area stay
+   compact and professional even if Tailwind fails to load. Colours come
+   from the --ed-* tokens above, which flip with [data-theme]. */
+
+.ed-page {
+  min-height: 100vh;
+  background-color: var(--ed-surface);
+  color: var(--ed-ink);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ed-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  border-bottom: 1px solid var(--ed-line);
+  background-color: var(--ed-surface);
+}
+
+.ed-header-inner {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 8px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+}
+
+.ed-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ed-ink);
+  flex: none;
+}
+
+.ed-brand-name {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+/* Logo size safety: hard 32px cap in plain CSS, on top of the
+   width/height attributes + inline maxWidth/maxHeight in Editor.tsx.
+   The SVG's natural size is 1024px — without this it explodes. */
+.ed-logo {
+  width: 32px;
+  height: 32px;
+  max-width: 32px;
+  max-height: 32px;
+  display: block;
+  flex: none;
+  object-fit: contain;
+}
+
+.ed-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  order: 3;
+  width: 100%;
+}
+
+.ed-tab {
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--ed-ink-2);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.ed-tab:hover {
+  background-color: var(--ed-surface-2);
+  color: var(--ed-accent);
+}
+
+.ed-tab[aria-selected='true'],
+.ed-tab-active {
+  background-color: var(--ed-accent);
+  color: #fff;
+}
+
+.ed-tab[aria-selected='true']:hover {
+  color: #fff;
+}
+
+.ed-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  order: 2;
+  margin-left: auto;
+  flex: none;
+}
+
+.ed-settings-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 6px;
+  border: 1px solid var(--ed-input-line);
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ed-ink-2);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.ed-settings-btn:hover {
+  border-color: var(--ed-accent);
+  color: var(--ed-accent);
+}
+
+.ed-settings-label {
+  display: none;
+}
+
+.ed-main {
+  padding: 24px 0 32px;
+}
+
+.ed-main-inner {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.ed-banner-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 6px;
+  background-color: var(--ed-error-soft);
+  color: var(--ed-error);
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ed-banner-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid var(--ed-pill-line);
+  background-color: var(--ed-pill-bg);
+  color: var(--ed-pill-text);
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ed-banner-btn {
+  border-radius: 6px;
+  border: 0;
+  background-color: var(--ed-accent);
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.ed-banner-btn:hover {
+  background-color: var(--ed-accent-hover);
+}
+
+.ed-banner-dismiss {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: inherit;
+  padding: 2px;
+  line-height: 0;
+  flex: none;
+}
+
+.ed-loading {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--ed-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (min-width: 640px) {
+  .ed-tabs {
+    order: 2;
+    width: auto;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .ed-header-actions {
+    order: 3;
+    margin-left: 0;
+  }
+
+  .ed-main {
+    padding: 32px 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .ed-settings-label {
+    display: inline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ed-tab,
+  .ed-settings-btn,
+  .ed-banner-btn {
+    transition: none;
+  }
+}
+
 /* Resize-mode row slides open when unlocked and width !== height. */
 .mode-row {
   overflow: hidden;

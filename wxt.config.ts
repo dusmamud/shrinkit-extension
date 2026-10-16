@@ -1,4 +1,5 @@
 import { defineConfig } from 'wxt';
+import tailwindcss from '@tailwindcss/vite';
 
 // ShrinkIt Chrome Extension — Manifest V3, WXT + React.
 // Single purpose: resize / compress / convert images the user selects,
@@ -33,5 +34,5 @@ export default defineConfig({
     },
     web_accessible_resources: [{ resources: ['icons/*.png'], matches: ['<all_urls>'] }],
   },
-  vite: () => ({ plugins: [] }),
+  vite: () => ({ plugins: [tailwindcss()] }),
 });

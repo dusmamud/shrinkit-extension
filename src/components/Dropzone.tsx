@@ -1,7 +1,7 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { t } from '../lib/i18n/index';
 import type { Locale } from '../lib/i18n/index';
-import { formatBytes } from '../lib/image/filenames';
+import { formatBytes, isSupportedInputFile } from '../lib/image/filenames';
 import type { QueueItem } from './ResultPanel';
 
 export interface DropzoneProps {
@@ -75,12 +75,27 @@ export default function Dropzone({
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Files this Dropzone itself rejected (browse / drag-drop). Shown with the
+  // localized errors.unsupported message below; paste + right-click
+  // rejections arrive via the parent `error` prop instead.
+  const [localRejected, setLocalRejected] = useState<string[]>([]);
+
+  // A parent error supersedes the local rejection banner — never stack both.
+  useEffect(() => {
+    if (error) setLocalRejected([]);
+  }, [error]);
 
   const emit = useCallback(
     (list: FileList | File[] | null) => {
       if (!list || disabled) return;
       const next = Array.from(list).filter((f) => f.size > 0);
-      if (next.length > 0) onFiles(next);
+      if (next.length === 0) return;
+      // Validate with isSupportedInputFile (extension + MIME) — never MIME
+      // alone, so SVG (image/svg+xml) is rejected here, not just downstream.
+      const supported = next.filter((f) => isSupportedInputFile(f));
+      const rejected = next.filter((f) => !isSupportedInputFile(f)).map((f) => f.name);
+      setLocalRejected(rejected);
+      if (supported.length > 0) onFiles(supported);
     },
     [disabled, onFiles],
   );
@@ -136,7 +151,7 @@ export default function Dropzone({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.avif"
         multiple
         data-testid="file-input"
         className="sr-only"
@@ -170,6 +185,9 @@ export default function Dropzone({
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2 px-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--ed-pill-line)] bg-[var(--ed-pill-bg)] px-3.5 py-1 text-center text-xs font-medium text-[var(--ed-pill-text)]">
             {t(locale, 'dropzone.limits_info')}
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--ed-pill-line)] bg-[var(--ed-pill-bg)] px-3.5 py-1 text-center text-xs font-medium text-[var(--ed-pill-text)]">
+            {t(locale, 'settings.format')}: JPG · PNG · WebP · GIF
           </span>
         </div>
       </div>
@@ -269,6 +287,35 @@ export default function Dropzone({
               <CloseIcon size={16} />
             </button>
           )}
+        </div>
+      )}
+      {!error && localRejected.length > 0 && (
+        <div
+          role="alert"
+          className="mx-auto mt-8 flex max-w-xl items-start gap-3 rounded-[6px] bg-[#d33] p-4 text-left text-sm text-white shadow-sm transition"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="mt-0.5 shrink-0 text-white">
+            <WarningIcon size={22} />
+          </span>
+          <div className="flex-1">
+            <div className="font-semibold text-white">
+              {localRejected.length > 1
+                ? t(locale, 'errors.unsupported_many')
+                : t(locale, 'errors.unsupported', { name: localRejected[0] })}
+            </div>
+            <div id="failedFilesList" className="mt-1 font-mono text-xs text-white/80">
+              {localRejected.join(', ')}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setLocalRejected([])}
+            aria-label={t(locale, 'errors.dismiss')}
+            className="text-white/80 transition hover:text-white"
+          >
+            <CloseIcon size={16} />
+          </button>
         </div>
       )}
     </div>

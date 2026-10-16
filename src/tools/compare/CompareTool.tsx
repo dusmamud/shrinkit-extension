@@ -16,7 +16,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { ImageProcessor, type ProcessedImage, type ProcessSettings } from '../../lib/image/process';
-import { FORMAT_MIME } from '../../lib/image/filenames';
+import { FORMAT_MIME, isSupportedInputFile } from '../../lib/image/filenames';
 import { t, type Locale } from '../../lib/i18n/index';
 
 export interface CompareToolProps {
@@ -185,7 +185,7 @@ export default function CompareTool({ locale }: CompareToolProps) {
 
   const handleOriginalFile = (next: File | undefined | null) => {
     if (!next) return;
-    if (!next.type.startsWith('image/')) {
+    if (!isSupportedInputFile(next)) {
       setError(t(locale, 'tools.compare.errorNotImage'));
       return;
     }
@@ -202,7 +202,7 @@ export default function CompareTool({ locale }: CompareToolProps) {
 
   const handleCompressedFile = (next: File | undefined | null) => {
     if (!next) return;
-    if (!next.type.startsWith('image/')) {
+    if (!isSupportedInputFile(next)) {
       setError(t(locale, 'tools.compare.errorNotImage'));
       return;
     }

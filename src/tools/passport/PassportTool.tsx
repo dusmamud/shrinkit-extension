@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { PASSPORT_PRESETS, makePassportPhoto, type PassportPreset } from './passportEngine';
 import { t, type Locale } from '../../lib/i18n/index';
+import { isSupportedInputFile } from '../../lib/image/filenames';
 
 export interface PassportToolProps {
   locale: Locale;
@@ -114,7 +115,7 @@ export default function PassportTool({ locale }: PassportToolProps) {
 
   const handleFile = (next: File | undefined | null) => {
     if (!next) return;
-    if (!next.type.startsWith('image/')) {
+    if (!isSupportedInputFile(next)) {
       setError(t(locale, 'tools.passport.errorNotImage'));
       return;
     }

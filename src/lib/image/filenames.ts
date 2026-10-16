@@ -70,9 +70,14 @@ export function isSupportedInputFileName(fileName: string): boolean {
 
 /** Check whether a file or mime type is a supported input image. */
 export function isSupportedInputFile(file: File): boolean {
-  if (file.type && file.type.startsWith('image/')) {
-    const sub = file.type.slice(6).toLowerCase();
-    if (['jpeg', 'jpg', 'png', 'gif', 'webp', 'bmp', 'avif'].includes(sub)) {
+  // Accept by MIME OR by extension. The MIME check is normalised
+  // (case-insensitive, parameters stripped) so e.g. 'IMAGE/JPEG' and
+  // 'image/x-ms-bmp' (legacy Windows BMP MIME) are accepted. SVG is
+  // deliberately NOT in the list — the tool cannot decode it.
+  const mime = file.type.trim().toLowerCase().split(';', 1)[0];
+  if (mime.startsWith('image/')) {
+    const sub = mime.slice(6);
+    if (['jpeg', 'jpg', 'png', 'gif', 'webp', 'bmp', 'x-ms-bmp', 'avif'].includes(sub)) {
       return true;
     }
   }

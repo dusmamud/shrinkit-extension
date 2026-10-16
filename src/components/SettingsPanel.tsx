@@ -570,9 +570,7 @@ export default function SettingsPanel({
                 value={settings.width}
                 disabled={disabled}
                 onChange={(e) => setWidth(e.target.value)}
-                title={
-                  widthError || `Allowed: ${unitLimit.min}–${unitLimit.max}${unitLimit.suffix}`
-                }
+                title={widthError || `${unitLimit.min}–${unitLimit.max}${unitLimit.suffix}`}
                 className={inputClass(isWidthInvalid)}
               />
               <input
@@ -585,9 +583,7 @@ export default function SettingsPanel({
                 value={settings.height}
                 disabled={disabled}
                 onChange={(e) => setHeight(e.target.value)}
-                title={
-                  heightError || `Allowed: ${unitLimit.min}–${unitLimit.max}${unitLimit.suffix}`
-                }
+                title={heightError || `${unitLimit.min}–${unitLimit.max}${unitLimit.suffix}`}
                 className={inputClass(isHeightInvalid)}
               />
             </div>
@@ -730,7 +726,7 @@ export default function SettingsPanel({
                       value={settings.dpi}
                       disabled={disabled}
                       onChange={(e) => onChange({ dpi: e.target.value })}
-                      title={dpiError || `Allowed: ${DPI_LIMITS.min}–${DPI_LIMITS.max} DPI`}
+                      title={dpiError || `${DPI_LIMITS.min}–${DPI_LIMITS.max} DPI`}
                       className={`h-[50px] w-[85px] rounded-[6px] pr-8 text-center text-[1.15em] font-light outline-none transition sm:w-[95px] sm:text-[1.25em] ${
                         isDpiInvalid
                           ? 'border-2 border-[var(--ed-error)] bg-[var(--ed-error-soft)] text-[var(--ed-error)] focus:border-[var(--ed-error)]'
@@ -862,7 +858,7 @@ export default function SettingsPanel({
                   value={qualityNum}
                   disabled={disabled}
                   onChange={(e) => onChange({ quality: e.target.value })}
-                  title={qualityError || `Allowed: ${QUALITY_LIMITS.min}–${QUALITY_LIMITS.max}%`}
+                  title={qualityError || `${QUALITY_LIMITS.min}–${QUALITY_LIMITS.max}%`}
                   className={`h-[50px] w-[90px] rounded-[6px] pr-7 text-center text-[1.25em] font-light outline-none transition ${
                     isQualityInvalid
                       ? 'border-2 border-[var(--ed-error)] bg-[var(--ed-error-soft)] text-[var(--ed-error)] focus:border-[var(--ed-error)]'
@@ -943,7 +939,7 @@ export default function SettingsPanel({
               onClick={onProcess}
               disabled={disabled || processing || itemCount === 0 || Boolean(validationError)}
               title={validationError || undefined}
-              className="inline-block rounded-[6px] bg-[var(--ed-accent)] px-12 py-3.5 text-[1.125rem] font-bold text-white shadow-sm transition hover:bg-[var(--ed-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40"
+              className="block w-full rounded-[6px] bg-[var(--ed-accent)] px-12 py-3.5 text-[1.125rem] font-bold text-white shadow-sm transition hover:bg-[var(--ed-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40"
             >
               {processing
                 ? t(locale, 'settings.processing')

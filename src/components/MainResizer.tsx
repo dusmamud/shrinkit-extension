@@ -151,6 +151,10 @@ export default function MainResizer({
     (files: File[]) => {
       setFormError(null);
       setFailedFiles([]);
+      // Single validation gate for EVERY add path (browse, drag-drop,
+      // paste, right-click preload): extension + MIME via isSupportedInputFile.
+      // Never filter by MIME alone — SVG (image/svg+xml) must be rejected.
+      const alreadyQueued = new Set(itemsRef.current.map((i) => i.file));
       const accepted: File[] = [];
       const rejectedNames: string[] = [];
       for (const f of files) {
@@ -158,6 +162,10 @@ export default function MainResizer({
           rejectedNames.push(f.name);
           continue;
         }
+        // Same File object already queued (e.g. right-click preload
+        // re-delivered after a remount): skip instead of duplicating.
+        if (alreadyQueued.has(f)) continue;
+        alreadyQueued.add(f);
         accepted.push(f);
       }
       if (rejectedNames.length > 0) {
@@ -206,6 +214,9 @@ export default function MainResizer({
   );
 
   // Consume preloaded files (right-click handoff) exactly once per array identity.
+  // addFiles dedupes by File object identity, so a re-delivery of the same
+  // files after a remount (e.g. tab switch) never duplicates the queue —
+  // the preloaded file stays visible exactly once, with thumbnail + dims.
   useEffect(() => {
     if (initialFiles && initialFiles.length > 0 && consumedInitialRef.current !== initialFiles) {
       consumedInitialRef.current = initialFiles;
@@ -225,11 +236,12 @@ export default function MainResizer({
         return;
       }
       const files: File[] = [];
+      // No MIME pre-filter here: pass every pasted file to addFiles, whose
+      // isSupportedInputFile gate rejects unsupported types (e.g. SVG)
+      // with the localized errors.unsupported message.
       if (e.clipboardData?.files && e.clipboardData.files.length > 0) {
         for (const file of Array.from(e.clipboardData.files)) {
-          if (file.type.startsWith('image/') || isSupportedInputFile(file)) {
-            files.push(file);
-          }
+          files.push(file);
         }
       }
       if (files.length === 0 && e.clipboardData?.items) {
@@ -254,13 +266,22 @@ export default function MainResizer({
     window.addEventListener('paste', onPaste);
     return () => {
       window.removeEventListener('paste', onPaste);
+    };
+  }, [addFiles]);
+
+  // Revoke object URLs + terminate the processor ONLY on unmount.
+  // (Previously this ran in the paste-listener cleanup, so a locale change
+  // — which recreates addFiles — revoked every live thumbnail/result URL.)
+  useEffect(
+    () => () => {
       processorRef.current?.terminate();
       for (const item of itemsRef.current) {
         URL.revokeObjectURL(item.previewUrl);
         if (item.resultUrl) URL.revokeObjectURL(item.resultUrl);
       }
-    };
-  }, [addFiles]);
+    },
+    [],
+  );
 
   const removeItem = useCallback((id: string) => {
     setItems((prev) => {

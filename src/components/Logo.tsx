@@ -30,6 +30,7 @@ export default function Logo({ size = 48, showWordmark = true }: LogoProps) {
         alt=""
         width={size}
         height={size}
+        style={{ width: size, height: size, maxWidth: size, maxHeight: size }}
         className="shrink-0"
         draggable={false}
       />
