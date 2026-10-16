@@ -18,7 +18,10 @@ export default defineConfig({
     description:
       'Shrink, compress and convert images entirely in your browser. No sign-up, no uploads, no watermarks. 100% private.',
     version: '1.0.0',
-    default_locale: 'en',
+    // NOTE: No default_locale here on purpose. ShrinkIt uses its own JSON
+    // i18n (src/i18n/messages/en|es|pt.json), NOT chrome.i18n. Chrome
+    // rejects a manifest with default_locale but no _locales/ subtree
+    // ("Default locale was specified, but _locales subtree is missing").
     permissions: ['storage', 'downloads', 'contextMenus', 'tabs', 'offscreen'],
     host_permissions: ['<all_urls>'],
     action: { default_title: 'ShrinkIt — Image Resizer' },
