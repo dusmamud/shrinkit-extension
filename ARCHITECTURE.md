@@ -1,0 +1,157 @@
+# Architecture — ShrinkIt Chrome Extension
+
+This document describes how the ShrinkIt extension is put together: its entrypoints, the image engine, internationalisation and settings, the shared tool definitions, and the message protocol that carries a right-clicked image into the editor.
+
+Stack: **WXT + React 19 + TypeScript (strict) + Tailwind CSS v4**, Manifest V3 (`chrome` extension API). All image processing is 100% local, on-device. There is no backend, no network call for processing, and no analytics.
+
+## Entrypoints
+
+All entrypoints live under `entrypoints/`. WXT builds each one into the MV3 bundle.
+
+| Entrypoint    | What it is                                    | What it does                                                                                                                                                                                     |
+| ------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `popup/`      | Toolbar popup (React)                         | Quick resize: 1–5 images, preset picker, Resize + Download, and a Full Editor button. Closes when it loses focus, so it stays small and single-purpose.                                          |
+| `editor/`     | Full Editor page (React, opened in a new tab) | All 6 tools (Main, Compress to 50 KB, Compress to 20 KB, Passport Photo Maker, Social Media Resizer, Compare Images), batch up to 50 images, per-image settings, download (single files or ZIP). |
+| `background/` | Service worker (plain TypeScript, no React)   | Owns the context menu (“Resize with ShrinkIt”), receives right-click events, and routes the clicked image into the editor via the offscreen document and session storage.                        |
+| `options/`    | Options page (React)                          | Settings UI: language, theme, defaults. Reads/writes the same settings store as the popup and editor.                                                                                            |
+| `offscreen/`  | Offscreen document                            | Fetches the bytes of a right-clicked image and hands them to the editor flow. Exists because MV3 service workers have no DOM or Canvas, so they cannot fetch-then-decode an image themselves.    |
+| `content/`    | Content script                                | Page-side support for the right-click flow: helps identify the image the user clicked so the background worker can resolve it to a URL.                                                          |
+
+Rules:
+
+- The service worker (`background/`) is plain TypeScript — no React, no DOM. It only coordinates: menus, routing, storage.
+- All DOM/Canvas image work happens in `popup/`, `editor/`, or `offscreen/` — never in the service worker.
+- The popup and the editor share the same image engine (`src/lib/`) and the same tool definitions (`src/tools/`), so a resize behaves identically in both.
+
+## Image engine — `src/lib/`
+
+The image engine is the only place that touches pixels. UI code calls into it; it never calls out to the UI.
+
+Pipeline for every output image:
+
+```
+decode -> resize (pica) -> encode -> DPI metadata
+```
+
+1. **Decode** — The input file (or fetched image bytes) is decoded to a bitmap (Canvas / `ImageBitmap`). EXIF orientation is honoured so photos from phones come out upright.
+2. **Resize (pica)** — Resizing is done with [pica](https://github.com/nodeca/pica), a high-quality Lanczos resampler that runs off the main thread where possible. This is the same resampling approach used by the ShrinkIt web app. Width/height, percentage, and target-size modes all funnel through this one step.
+3. **Encode** — The resized bitmap is encoded to the user's chosen output format (JPEG / PNG / WebP, per the tool's options) at the chosen quality. Target-size tools (50 KB, 20 KB) loop: encode, measure, adjust quality/dimensions, re-encode — until the output fits the target or the loop reaches its quality floor.
+4. **DPI metadata** — Where a tool needs it (e.g. passport photos), DPI metadata is written into the encoded output so the file carries the correct print density, not just pixel dimensions.
+
+Supporting concerns in `src/lib/`:
+
+- **Format handling** — JPEG/PNG/WebP encode paths; GIF input decoded to a still frame (the extension resizes still images, it does not re-encode animations).
+- **EXIF** — Orientation honoured on decode; DPI written on encode where required. No other EXIF is preserved or transmitted.
+- **Batch + ZIP** — The editor processes each image through the same pipeline independently, then offers individual downloads or a single ZIP (via JSZip) for the batch.
+- **Errors** — Unsupported or corrupt files produce a readable, localised error message naming the file. No error data leaves the device.
+
+## Tools — `src/tools/`
+
+`src/tools/` holds the six tool definitions shared by the popup and the editor:
+
+1. **Main** — resize by dimensions / percentage / target file size, format + quality.
+2. **Compress to 50 KB** — iterative encode loop targeting ≤ 50 KB.
+3. **Compress to 20 KB** — iterative encode loop targeting ≤ 20 KB.
+4. **Passport Photo Maker** — fixed passport dimensions + DPI.
+5. **Social Media Resizer** — preset dimensions for common social formats.
+6. **Compare Images** — original vs. resized, side by side, so the user can judge quality before downloading.
+
+Each tool is a definition (its inputs, defaults, constraints, and which engine options it sets) plus its UI. The popup exposes a small subset (quick resize presets); the editor exposes all six in full. Tool logic is never duplicated between popup and editor — both import from `src/tools/`.
+
+## i18n — `src/lib/i18n` + `src/i18n/`
+
+- Languages: **English (en), Spanish (es), Portuguese (pt)**. English is the fallback: any missing key renders in English, never a raw key.
+- Message catalogs live in `src/i18n/` (one catalog per language). UI code references keys, never literal strings.
+- **No hardcoded English** (or any language) in UI code — every user-visible string goes through the i18n lookup. This is enforced by code review (see [CONTRIBUTING.md](CONTRIBUTING.md)).
+- The user's language choice is a synced setting (see below). Changing it in Options applies everywhere (popup, editor, options) without reload gymnastics.
+
+## Settings — `src/lib/` settings + `chrome.storage.sync`
+
+Settings are small JSON only: language, theme, and per-tool defaults. They are stored with `chrome.storage.sync` so they follow the user across their Chrome browsers.
+
+Constraints the code respects:
+
+- **Sync quotas are small.** `chrome.storage.sync` enforces small per-item and total quotas, so settings must stay tiny plain JSON (strings, numbers, booleans). Nothing large ever goes here.
+- **Never images.** Image bytes, data URLs, and blobs are never written to `storage.sync` (or to any `chrome.storage` area). Images live only in memory and in `chrome.storage.session` for the short right-click handoff described below.
+- **Defaults** — On first run, defaults apply (English, system/light theme, standard quality). A corrupt or missing settings object falls back to defaults rather than breaking the UI.
+- **Single store** — Popup, editor, and options all read/write through the same settings module in `src/lib/`, so there is exactly one source of truth.
+
+## Message protocol — right-click flow
+
+Right-clicking an image has to move image bytes from an arbitrary web page into the editor. MV3 forbids the straightforward path (the service worker cannot use DOM/Canvas), so the handoff is split across four actors and one short-lived store:
+
+```
+User right-clicks an image
+  -> content script identifies the clicked image (page side)
+  -> background service worker receives the context-menu click (URL + page info)
+  -> background asks the offscreen document to fetch the image bytes
+       (offscreen has DOM/fetch; this also bypasses page CORS blocks,
+        because the fetch happens in extension context, not page context)
+  -> offscreen returns the bytes to background
+  -> background writes the bytes to chrome.storage.session
+       (session storage: in-memory, cleared when the browser session ends,
+        never synced, never persisted to disk by the extension)
+  -> background opens the Full Editor in a new tab (chrome.tabs)
+  -> editor reads the bytes from chrome.storage.session, decodes them,
+       and presents the image ready to resize
+  -> editor clears the session entry once consumed
+```
+
+Rules for this protocol:
+
+- `chrome.storage.session` is a **handoff buffer only**: one image (or one small set of images from one click), consumed by the editor, then cleared. It is never a cache and never holds user data long-term.
+- The background worker never inspects pixel data — it only passes bytes through.
+- If any step fails (fetch blocked, session read empty, editor closed before consuming), the editor shows a readable, localised error and the flow stops. No partial or stale image is ever shown as if it were the clicked one.
+- The same editor also accepts images the user picks directly (file picker / drag-and-drop) — the session handoff is only one input path, not a dependency.
+
+## Data flow diagram (text)
+
+```
+┌──────────────┐   pick / drop files    ┌──────────────────┐
+│  Popup       │ ──────────────────────▶│  Image engine    │
+│  (1–5 imgs)  │   decode→pica→encode   │  src/lib/        │
+└──────────────┘   + DPI                 │  (shared)        │
+        │                                └────────┬─────────┘
+        │ Full Editor button                      │ outputs
+        ▼                                         ▼
+┌──────────────┐   pick / drop / right-click    ┌──────────────────┐
+│  Editor      │ ──────────────────────────────▶│  Downloads / ZIP │
+│  (6 tools,   │   (session handoff for          │  (user's folder) │
+│   batch 50)  │    right-clicked images)        └──────────────────┘
+└──────────────┘
+        ▲
+        │ context menu click
+┌──────────────┐   fetch bytes    ┌──────────────────┐
+│  Background  │ ───────────────▶│  Offscreen doc   │
+│  (service    │ ◀───────────────│  (fetch + return)│
+│   worker)    │   bytes          └──────────────────┘
+└──────────────┘
+        │  session handoff (chrome.storage.session)
+        │  new tab (chrome.tabs)
+        ▼
+   Editor (above)
+
+┌──────────────┐   settings JSON only   ┌──────────────────┐
+│  Options /   │ ◀─────────────────────▶│ chrome.storage   │
+│  Popup /     │   (sync, tiny, never   │ .sync            │
+│  Editor      │    images)              └──────────────────┘
+└──────────────┘
+
+i18n catalogs (src/i18n/: en / es / pt) serve every UI surface.
+```
+
+## Why WXT + MV3
+
+- **Manifest V3 is required** for new Chrome Web Store submissions. MV2 is deprecated and cannot be listed.
+- **WXT** is the standard build tooling for MV3 extensions: it generates the manifest, bundles each entrypoint, handles the dev server with hot reload, and produces the Store-ready `.zip` (`npm run zip`). Hand-rolling the manifest and bundling would re-implement what WXT already does correctly.
+- **React + TypeScript** match the ShrinkIt web app's stack, so components, tool logic, and i18n patterns carry over directly instead of being rewritten in a second style.
+- **No background page** — MV3 replaces persistent background pages with an event-driven service worker. That is why the offscreen document exists (see the right-click protocol above): DOM/Canvas work that used to live in a background page now lives in the offscreen document.
+
+## What this extension never does
+
+- No network requests for processing, analytics, or tracking. The only network use is the offscreen document fetching the bytes of an image the user explicitly right-clicked, so it can be resized locally.
+- No servers, no accounts, no sign-in.
+- No storing images in `chrome.storage` (sync or local). Images exist in memory, in the session handoff, and as files the user downloads.
+- No reading browsing history, no content-script scraping, no injecting code into pages beyond the minimal right-click support.
+
+See [docs/PRIVACY.md](docs/PRIVACY.md) and [docs/PERMISSIONS.md](docs/PERMISSIONS.md).

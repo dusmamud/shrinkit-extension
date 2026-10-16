@@ -1,0 +1,17 @@
+<!doctype html>
+<!-- ShrinkIt offscreen document.
+     Invisible helper page: the MV3 service worker has no DOM, so it
+     cannot fetch cross-origin image bytes or read a Blob as a data
+     URL. This page exists only to do that one job for an image the
+     user right-clicked. No UI, no user-visible content.
+     Loaded by the background worker via chrome.offscreen.createDocument
+     with reason BLOBS. Script is entrypoints/offscreen/main.ts. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ShrinkIt offscreen</title>
+  </head>
+  <body>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

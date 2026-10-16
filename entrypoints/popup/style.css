@@ -1,0 +1,208 @@
+/* Popup-only styles. Layout utilities come from Tailwind (via global.css);
+   these rules carry the popup's fixed size and theme-aware surfaces.
+   Class names match Popup.tsx exactly. */
+.popup-root {
+  width: 400px;
+  max-height: 560px;
+  overflow-y: auto;
+  padding: 12px;
+  font-family: 'Poppins', system-ui, sans-serif;
+  background: #fff;
+  color: #111;
+  box-sizing: border-box;
+}
+[data-theme='dark'] .popup-root {
+  background: #14171c;
+  color: #eef1f4;
+}
+.popup-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.popup-header-spacer {
+  flex: 1;
+}
+.popup-header select {
+  max-width: 110px;
+}
+.popup-error {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  background: #fde8e8;
+  color: #7f1d1d;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.popup-dropzone {
+  border: 2px dashed #007bff;
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 13px;
+}
+.popup-dropzone-drag {
+  background: #e8f2ff;
+}
+[data-theme='dark'] .popup-dropzone-drag {
+  background: #1d2b3f;
+}
+.popup-muted {
+  color: #666;
+  font-size: 12px;
+}
+[data-theme='dark'] .popup-muted {
+  color: #9aa4b2;
+}
+.popup-count {
+  font-size: 12px;
+  margin: 8px 0 4px;
+}
+.popup-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.popup-thumb {
+  position: relative;
+  width: 56px;
+  height: 56px;
+}
+.popup-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.popup-thumb button {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  line-height: 1;
+}
+.popup-label {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 10px 0 6px;
+}
+.popup-presets {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.popup-presets button {
+  flex: 1;
+  padding: 6px 4px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+}
+.popup-presets button.active {
+  background: #007bff;
+  border-color: #007bff;
+  color: #fff;
+}
+[data-theme='dark'] .popup-presets button {
+  background: #1c2128;
+  border-color: #333;
+  color: #eef1f4;
+}
+.popup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.popup-grid label,
+.popup-quality,
+.popup-check {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.popup-grid input,
+.popup-grid select,
+.popup-quality input[type='range'] {
+  width: 100%;
+}
+.popup-check {
+  flex-direction: row;
+  align-items: center;
+  margin: 8px 0;
+}
+.popup-primary {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  background: #007bff;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.popup-primary:hover {
+  background: #016df0;
+}
+.popup-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.popup-secondary {
+  padding: 8px 10px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+}
+[data-theme='dark'] .popup-secondary {
+  background: #1c2128;
+  border-color: #333;
+  color: #eef1f4;
+}
+.popup-results {
+  margin-top: 12px;
+}
+.popup-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 6px 0;
+  border-top: 1px solid #eee;
+}
+.popup-result span:first-child {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.popup-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.popup-footer .popup-secondary {
+  flex: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+  }
+}

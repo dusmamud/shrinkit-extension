@@ -1,0 +1,16 @@
+/* Options page extras. Layout/spacing live in Tailwind classes; this file
+   only sets native-control accents so radios, checkboxes and range inputs
+   match the ShrinkIt blue in every browser. */
+
+input[type='radio'],
+input[type='checkbox'],
+input[type='range'] {
+  accent-color: var(--accent);
+}
+
+select:focus-visible,
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}

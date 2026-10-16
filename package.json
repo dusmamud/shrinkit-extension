@@ -1,0 +1,43 @@
+{
+  "dependencies": {
+    "exifr": "^7.1.3",
+    "gifenc": "^1.0.3",
+    "jszip": "^3.10.1",
+    "pica": "^9.0.1",
+    "piexifjs": "^1.0.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zustand": "^5.0.8"
+  },
+  "description": "ShrinkIt — free, private, client-side image resizer & compressor as a Chrome extension (WXT + React + Tailwind, Manifest V3)",
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/chrome": "^0.0.330",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@wxt-dev/module-react": "^1.1.4",
+    "eslint": "^9.24.0",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.29.0",
+    "vitest": "^3.1.3",
+    "wxt": "^0.20.9"
+  },
+  "name": "shrinkit-extension",
+  "private": true,
+  "scripts": {
+    "build": "wxt build",
+    "dev": "wxt",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "lint": "eslint .",
+    "preview": "wxt prepare && vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "zip": "wxt zip"
+  },
+  "type": "module",
+  "version": "1.0.0"
+}

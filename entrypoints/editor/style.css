@@ -1,0 +1,150 @@
+/* ShrinkIt Full Editor — theme tokens + small shared helpers.
+   Layout/spacing utilities come from Tailwind; colours go through these
+   variables so light/dark switching is a single [data-theme] flip. */
+
+:root {
+  --ed-surface: #ffffff;
+  --ed-surface-2: #f6f8fb;
+  --ed-ink: #1a1a1a;
+  --ed-ink-2: #333333;
+  --ed-muted: #6b7280;
+  --ed-line: #e2e8f0;
+  --ed-input-bg: #ffffff;
+  --ed-input-line: #cbd5e1;
+  --ed-thumb-bg: #fafcff;
+  --ed-accent: #007bff;
+  --ed-accent-hover: #016df0;
+  --ed-error: #d33;
+  --ed-error-soft: #fdecea;
+  --ed-success: #15803d;
+  --ed-success-bg: #f0fdf4;
+  --ed-warning: #b45309;
+  --ed-dropzone: #f4f9ff;
+  --ed-dash: #9ec5ff;
+  --ed-pill-bg: #eef4ff;
+  --ed-pill-text: #1e40af;
+  --ed-pill-line: #c7d7fe;
+  --ed-checker-a: #f8fafc;
+  --ed-checker-b: #e2e8f0;
+}
+
+[data-theme='dark'] {
+  --ed-surface: #1a1d23;
+  --ed-surface-2: #23272f;
+  --ed-ink: #f1f5f9;
+  --ed-ink-2: #e2e8f0;
+  --ed-muted: #9ca3af;
+  --ed-line: #374151;
+  --ed-input-bg: #23272f;
+  --ed-input-line: #4b5563;
+  --ed-thumb-bg: #23272f;
+  --ed-accent: #0a84ff;
+  --ed-accent-hover: #2b9bff;
+  --ed-error: #f87171;
+  --ed-error-soft: #3a1d1d;
+  --ed-success: #4ade80;
+  --ed-success-bg: #14251a;
+  --ed-warning: #fbbf24;
+  --ed-dropzone: #1c2433;
+  --ed-dash: #3b82f6;
+  --ed-pill-bg: #1e293b;
+  --ed-pill-text: #bfdbfe;
+  --ed-pill-line: #334155;
+  --ed-checker-a: #23272f;
+  --ed-checker-b: #2e343f;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--ed-surface);
+  color: var(--ed-ink);
+}
+
+/* Checkerboard backdrop behind thumbnails / previews (transparency hint). */
+.checkerboard {
+  background-image:
+    linear-gradient(45deg, var(--ed-checker-b) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--ed-checker-b) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--ed-checker-b) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--ed-checker-b) 75%);
+  background-size: 16px 16px;
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
+  background-color: var(--ed-checker-a);
+}
+
+/* Two-line clamp for file names. */
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Animated ellipsis for the "processing" pill. */
+.dots::after {
+  content: '';
+  animation: ed-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes ed-dots {
+  0% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+}
+
+/* Resize-mode row slides open when unlocked and width !== height. */
+.mode-row {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.mode-row.open {
+  max-height: 220px;
+  opacity: 1;
+}
+
+/* Dropdown entrance, matching the web app's animated select. */
+.ed-menu-in {
+  animation: ed-menu-in 0.15s ease-out;
+}
+
+@keyframes ed-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dots::after,
+  .ed-menu-in,
+  .mode-row {
+    animation: none;
+    transition: none;
+  }
+
+  .mode-row.open {
+    max-height: none;
+  }
+}

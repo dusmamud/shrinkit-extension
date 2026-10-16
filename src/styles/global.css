@@ -1,0 +1,70 @@
+@import 'tailwindcss';
+
+/* ShrinkIt design tokens — same look as the web app. Poppins + blue #007bff. */
+:root {
+  --accent: #007bff;
+  --accent-hover: #016df0;
+}
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+body {
+  font-family: 'Poppins', system-ui, sans-serif;
+}
+
+/*
+ * Fonts: NO remote @import here. Extension CSP blocks remote fonts at
+ * runtime, so 'Poppins' above is used only when it is already available
+ * on the system; otherwise the system-ui fallback applies. Do not add a
+ * Google Fonts @import or <link> — it would fail under MV3 CSP.
+ */
+
+/* Shared component classes (plain CSS, no @apply — safe under Tailwind v4). */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 1rem;
+}
+[data-theme='dark'] .card {
+  border-color: #374151;
+  background: #1f2937;
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+[data-theme='dark'] .input {
+  border-color: #4b5563;
+  background: #111827;
+}
