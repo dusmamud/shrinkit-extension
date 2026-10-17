@@ -247,26 +247,26 @@ export default function CompareTool({ locale }: CompareToolProps) {
   return (
     <div className="mx-auto box-border w-full min-w-0 max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 text-center">
-        <span className="mb-3 inline-flex items-center rounded-full border border-[#007bff]/20 bg-[#007bff]/10 px-3 py-1 text-xs font-medium text-[#007bff]">
+        <span className="mb-3 inline-flex items-center rounded-full border border-taccent/20 bg-taccent/10 px-3 py-1 text-xs font-medium text-taccent">
           {t(locale, 'tools.compare.badge')}
         </span>
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-tink sm:text-3xl">
           {t(locale, 'tools.compare.title')}
         </h2>
-        <p className="mx-auto max-w-2xl text-sm text-slate-500 sm:text-base">
+        <p className="mx-auto max-w-2xl text-sm text-tmuted sm:text-base">
           {t(locale, 'tools.compare.subtitle')}
         </p>
       </div>
 
       <div className="mb-6 flex min-w-0 flex-wrap items-center justify-center gap-3">
-        <div className="inline-flex min-w-0 max-w-full rounded-lg border border-slate-200 bg-white p-1">
+        <div className="inline-flex min-w-0 max-w-full rounded-lg border border-tline bg-tsurface p-1">
           <button
             type="button"
             onClick={() => setMode('generate')}
             className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition ${
               mode === 'generate'
-                ? 'bg-[#007bff] text-white shadow-sm'
-                : 'text-slate-500 hover:text-slate-900'
+                ? 'bg-taccent text-white shadow-sm'
+                : 'text-tmuted hover:text-tink'
             }`}
           >
             {t(locale, 'tools.compare.modeGenerate')}
@@ -276,8 +276,8 @@ export default function CompareTool({ locale }: CompareToolProps) {
             onClick={() => setMode('twoFiles')}
             className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition ${
               mode === 'twoFiles'
-                ? 'bg-[#007bff] text-white shadow-sm'
-                : 'text-slate-500 hover:text-slate-900'
+                ? 'bg-taccent text-white shadow-sm'
+                : 'text-tmuted hover:text-tink'
             }`}
           >
             {t(locale, 'tools.compare.modeTwoFiles')}
@@ -289,6 +289,7 @@ export default function CompareTool({ locale }: CompareToolProps) {
         <div
           role="button"
           tabIndex={0}
+          aria-label={t(locale, 'tools.compare.dropTitle')}
           onDragOver={(e) => {
             e.preventDefault();
             setDragging(true);
@@ -301,10 +302,14 @@ export default function CompareTool({ locale }: CompareToolProps) {
           }}
           onClick={() => originalInputRef.current?.click()}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') originalInputRef.current?.click();
+            if (e.key === 'Enter' || e.key === ' ') {
+              // Space would otherwise scroll the page behind the dropzone.
+              e.preventDefault();
+              originalInputRef.current?.click();
+            }
           }}
-          className={`relative flex min-w-0 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-white p-6 text-center break-words shadow-sm transition sm:p-10 lg:p-12 ${
-            dragging ? 'border-[#007bff] bg-[#007bff]/5' : 'border-slate-200 hover:border-[#007bff]'
+          className={`relative flex min-w-0 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-tsurface p-6 text-center break-words shadow-sm transition sm:p-10 lg:p-12 ${
+            dragging ? 'border-taccent bg-taccent/5' : 'border-tline hover:border-taccent'
           }`}
         >
           <input
@@ -317,23 +322,21 @@ export default function CompareTool({ locale }: CompareToolProps) {
               e.target.value = '';
             }}
           />
-          <p className="mb-1 break-words text-lg font-semibold text-slate-900">
+          <p className="mb-1 break-words text-lg font-semibold text-tink">
             {t(locale, 'tools.compare.dropTitle')}
           </p>
-          <p className="break-words text-xs text-slate-500">
-            {t(locale, 'tools.compare.dropHint')}
-          </p>
+          <p className="break-words text-xs text-tmuted">{t(locale, 'tools.compare.dropHint')}</p>
         </div>
       ) : mode === 'twoFiles' && !compressedUrl ? (
-        <div className="box-border min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+        <div className="box-border min-w-0 rounded-2xl border border-tline bg-tsurface p-4 shadow-sm sm:p-6 lg:p-8">
           <div className="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-3">
-            <span className="min-w-0 max-w-full truncate text-sm font-semibold break-words text-slate-900 sm:max-w-60">
+            <span className="min-w-0 max-w-full truncate text-sm font-semibold break-words text-tink sm:max-w-60">
               {originalFile.name} — {formatBytes(originalSize)}
             </span>
             <button
               type="button"
               onClick={handleReset}
-              className="cursor-pointer text-xs text-slate-500 transition hover:text-red-600"
+              className="cursor-pointer text-xs text-tmuted transition hover:text-red-600"
             >
               {t(locale, 'tools.compare.remove')}
             </button>
@@ -341,6 +344,7 @@ export default function CompareTool({ locale }: CompareToolProps) {
           <div
             role="button"
             tabIndex={0}
+            aria-label={t(locale, 'tools.compare.dropCompressedTitle')}
             onDragOver={(e) => {
               e.preventDefault();
               setDraggingSecond(true);
@@ -353,12 +357,14 @@ export default function CompareTool({ locale }: CompareToolProps) {
             }}
             onClick={() => compressedInputRef.current?.click()}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') compressedInputRef.current?.click();
+              if (e.key === 'Enter' || e.key === ' ') {
+                // Space would otherwise scroll the page behind the dropzone.
+                e.preventDefault();
+                compressedInputRef.current?.click();
+              }
             }}
-            className={`relative flex min-w-0 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-white p-6 text-center break-words transition sm:p-10 ${
-              draggingSecond
-                ? 'border-[#007bff] bg-[#007bff]/5'
-                : 'border-slate-200 hover:border-[#007bff]'
+            className={`relative flex min-w-0 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-tsurface p-6 text-center break-words transition sm:p-10 ${
+              draggingSecond ? 'border-taccent bg-taccent/5' : 'border-tline hover:border-taccent'
             }`}
           >
             <input
@@ -371,32 +377,32 @@ export default function CompareTool({ locale }: CompareToolProps) {
                 e.target.value = '';
               }}
             />
-            <p className="mb-1 break-words text-lg font-semibold text-slate-900">
+            <p className="mb-1 break-words text-lg font-semibold text-tink">
               {t(locale, 'tools.compare.dropCompressedTitle')}
             </p>
-            <p className="break-words text-xs text-slate-500">
+            <p className="break-words text-xs text-tmuted">
               {t(locale, 'tools.compare.dropCompressedHint')}
             </p>
           </div>
         </div>
       ) : showComparison ? (
-        <div className="box-border min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+        <div className="box-border min-w-0 rounded-2xl border border-tline bg-tsurface p-4 shadow-sm sm:p-6 lg:p-8">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-tline pb-4">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <span className="min-w-0 max-w-full truncate text-sm font-semibold break-words text-slate-900 sm:max-w-50">
+              <span className="min-w-0 max-w-full truncate text-sm font-semibold break-words text-tink sm:max-w-50">
                 {originalFile.name}
               </span>
               <button
                 type="button"
                 onClick={handleReset}
-                className="shrink-0 cursor-pointer text-xs text-slate-500 transition hover:text-red-600"
+                className="shrink-0 cursor-pointer text-xs text-tmuted transition hover:text-red-600"
               >
                 {t(locale, 'tools.compare.remove')}
               </button>
             </div>
             {mode === 'generate' && (
               <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
-                <span className="text-xs font-medium break-words text-slate-500">
+                <span className="text-xs font-medium break-words text-tmuted">
                   {t(locale, 'tools.compare.qualityLabel')}
                 </span>
                 <input
@@ -405,9 +411,9 @@ export default function CompareTool({ locale }: CompareToolProps) {
                   max="95"
                   value={quality}
                   onChange={(e) => setQuality(Number(e.target.value))}
-                  className="h-8 w-28 min-w-0 max-w-full cursor-pointer accent-[#007bff] sm:w-32"
+                  className="h-8 w-28 min-w-0 max-w-full cursor-pointer accent-taccent sm:w-32"
                 />
-                <span className="w-10 shrink-0 text-right text-sm font-bold text-slate-900">
+                <span className="w-10 shrink-0 text-right text-sm font-bold text-tink">
                   {quality}%
                 </span>
               </div>
@@ -415,19 +421,19 @@ export default function CompareTool({ locale }: CompareToolProps) {
           </div>
 
           <div className="mb-6 grid min-w-0 grid-cols-2 gap-3 text-center sm:gap-4">
-            <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-3 break-words">
-              <span className="block text-xs break-words text-slate-500">
+            <div className="min-w-0 rounded-xl border border-tline bg-tsurface2 p-3 break-words">
+              <span className="block text-xs break-words text-tmuted">
                 {t(locale, 'tools.compare.originalLeft')}
               </span>
-              <span className="break-words text-base font-bold text-slate-900">
+              <span className="break-words text-base font-bold text-tink">
                 {formatBytes(originalSize)}
               </span>
             </div>
-            <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-3 break-words">
-              <span className="block text-xs text-slate-500">
+            <div className="min-w-0 rounded-xl border border-tline bg-tsurface2 p-3 break-words">
+              <span className="block text-xs text-tmuted">
                 {t(locale, 'tools.compare.compressedRight')}
               </span>
-              <span className="text-base font-bold text-[#007bff]">
+              <span className="text-base font-bold text-taccent">
                 {formatBytes(compressedSize)}
               </span>
               {compressedSize > 0 && originalSize > 0 && (
@@ -464,12 +470,12 @@ export default function CompareTool({ locale }: CompareToolProps) {
             onTouchMove={(e) => {
               if (isDraggingRef.current) handlePointer(e.touches[0].clientX);
             }}
-            className="relative flex aspect-[16/10] max-h-125 min-w-0 w-full cursor-ew-resize touch-none items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner select-none"
+            className="relative flex aspect-[16/10] max-h-125 min-w-0 w-full cursor-ew-resize touch-none items-center justify-center overflow-hidden rounded-xl border border-tline bg-tsurface2 shadow-inner select-none"
           >
             {compressedUrl && (
               <img
                 src={compressedUrl}
-                alt=""
+                alt={t(locale, 'tools.compare.compressedAlt')}
                 className="pointer-events-none absolute inset-0 h-full w-full object-contain"
               />
             )}
@@ -480,16 +486,16 @@ export default function CompareTool({ locale }: CompareToolProps) {
               >
                 <img
                   src={originalUrl}
-                  alt=""
+                  alt={t(locale, 'tools.compare.originalAlt')}
                   className="pointer-events-none h-full w-full object-contain"
                 />
               </div>
             )}
             <div
-              className="pointer-events-none absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.6)]"
+              className="pointer-events-none absolute top-0 bottom-0 w-0.5 bg-tsurface shadow-[0_0_8px_rgba(0,0,0,0.6)]"
               style={{ left: `${sliderPos}%` }}
             >
-              <div className="absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black shadow-lg">
+              <div className="absolute top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-tsurface text-tink shadow-lg">
                 ↔
               </div>
             </div>
@@ -513,7 +519,7 @@ export default function CompareTool({ locale }: CompareToolProps) {
             value={sliderPos}
             onChange={(e) => setSliderPos(Number(e.target.value))}
             aria-label={t(locale, 'tools.compare.sliderLabel')}
-            className="mt-4 h-11 w-full min-w-0 cursor-pointer accent-[#007bff]"
+            className="mt-4 h-11 w-full min-w-0 cursor-pointer accent-taccent"
           />
 
           {error && (
@@ -524,7 +530,7 @@ export default function CompareTool({ locale }: CompareToolProps) {
             <button
               type="button"
               onClick={() => originalInputRef.current?.click()}
-              className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-4 py-2.5 text-xs font-medium text-slate-900 transition hover:bg-slate-50 sm:w-auto"
+              className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-tline px-4 py-2.5 text-xs font-medium text-tink transition hover:bg-tsurface2 sm:w-auto"
             >
               {t(locale, 'tools.compare.changePhoto')}
             </button>
@@ -542,7 +548,7 @@ export default function CompareTool({ locale }: CompareToolProps) {
               <button
                 type="button"
                 onClick={handleDownload}
-                className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#007bff] px-6 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#016df0] sm:w-auto"
+                className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-taccent px-6 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#016df0] sm:w-auto"
               >
                 {t(locale, 'tools.compare.download')}
               </button>

@@ -270,9 +270,8 @@ function checkContainer(label, ok, detail = '') {
   else fail(label, detail);
 }
 checkContainer(
-  'editor header inner 1075px (Editor.tsx + editor/style.css)',
-  editorTsx.includes('max-w-[1075px]') &&
-    extractBlock(editorCss, /\.ed-header-inner\s*\{/).includes('max-width: 1075px'),
+  'editor header inner 1075px (Header.tsx)',
+  read('src/components/layout/Header.tsx').includes('max-w-[1075px]'),
 );
 checkContainer(
   'editor main inner 960px (Editor.tsx + editor/style.css)',
@@ -413,13 +412,19 @@ checkTokenMap(
 }
 
 // --- 5. Logo pinning -----------------------------------------------------------
-function pinsTo32(expr, source) {
+function pinsTo(expr, source, size) {
   if (expr === undefined) return false;
   const trimmed = expr.trim();
-  if (trimmed === '32') return true;
+  if (trimmed === String(size)) return true;
   const name = trimmed.match(/^([A-Za-z_$][\w$]*)$/)?.[1];
   if (!name) return false;
-  return new RegExp(`const\\s+${name}\\s*=\\s*32\\b`).test(source);
+  return new RegExp(`const\\s+${name}\\s*=\\s*${size}\\b`).test(source);
+}
+function pinsTo32(expr, source) {
+  return pinsTo(expr, source, 32);
+}
+function pinsTo34(expr, source) {
+  return pinsTo(expr, source, 34);
 }
 function imgTags(source) {
   return source.match(/<img[\s\S]*?\/>/g) ?? [];
@@ -431,18 +436,19 @@ function styleProp(tag, name) {
   return tag.match(new RegExp(`${name}:\\s*([^,}\\s]+)`))?.[1];
 }
 {
-  const logoImg = imgTags(editorTsx).find((tag) => tag.includes('logoSrc'));
+  // Web parity: the editor header brand icon renders at 34px (Header.tsx).
+  const headerTsx = read('src/components/layout/Header.tsx');
+  const logoImg = imgTags(headerTsx).find((tag) => tag.includes('resolveIconUrl()'));
   const ok =
     logoImg !== undefined &&
-    pinsTo32(jsxAttr(logoImg, 'width'), editorTsx) &&
-    pinsTo32(jsxAttr(logoImg, 'height'), editorTsx) &&
-    pinsTo32(styleProp(logoImg, 'maxWidth'), editorTsx) &&
-    pinsTo32(styleProp(logoImg, 'maxHeight'), editorTsx) &&
-    ['width: 32px', 'height: 32px', 'max-width: 32px', 'max-height: 32px'].every((r) =>
-      extractBlock(editorCss, /\.ed-logo\s*\{/).includes(r),
-    );
-  if (ok) pass('editor header logo pinned 32px');
-  else fail('editor header logo pinned 32px');
+    pinsTo34(jsxAttr(logoImg, 'width'), headerTsx) &&
+    pinsTo34(jsxAttr(logoImg, 'height'), headerTsx) &&
+    pinsTo34(styleProp(logoImg, 'width'), headerTsx) &&
+    pinsTo34(styleProp(logoImg, 'height'), headerTsx) &&
+    pinsTo34(styleProp(logoImg, 'maxWidth'), headerTsx) &&
+    pinsTo34(styleProp(logoImg, 'maxHeight'), headerTsx);
+  if (ok) pass('editor header logo pinned 34px');
+  else fail('editor header logo pinned 34px');
 }
 {
   const popupTsx = read('entrypoints/popup/Popup.tsx');
@@ -539,7 +545,7 @@ const rows = [
   ],
   [
     '360px',
-    'header stacks; tabs shrink (editor @media 360px)',
+    'header stacks (editor @media 360px)',
     '@media 360px in editor/style.css + global.css; min-width:0',
     'NOT verified here',
   ],
@@ -557,7 +563,7 @@ const rows = [
   ],
   [
     '480px',
-    'header tabs shrink; global body wrap guard',
+    'global body wrap guard',
     '@media 480px in editor/style.css + global.css',
     'NOT verified here',
   ],
@@ -582,7 +588,7 @@ const rows = [
   [
     '1075px',
     'header inner caps at 1075px',
-    'max-w-[1075px] in Editor.tsx + built CSS',
+    'max-w-[1075px] in Header.tsx + built CSS',
     'NOT verified here',
   ],
   [

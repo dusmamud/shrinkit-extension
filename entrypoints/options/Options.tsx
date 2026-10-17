@@ -100,6 +100,22 @@ export default function Options() {
     document.title = `${t(locale, 'site.name')} — ${t(locale, 'options.title')}`;
   }, [locale]);
 
+  /**
+   * Open an Editor hash route (Home `#/` or Tools `#/tools`) in a new tab.
+   * Same pattern as the Popup's openEditor: chrome.tabs.create with a
+   * window.open fallback so the link still works outside the extension
+   * context. Never throws.
+   */
+  const openEditorPage = useCallback(async (hash: string): Promise<void> => {
+    const fallbackUrl = `editor.html${hash}`;
+    try {
+      const url = `${chrome.runtime.getURL('editor.html')}${hash}`;
+      await chrome.tabs.create({ url });
+    } catch {
+      window.open(fallbackUrl, '_blank', 'noopener');
+    }
+  }, []);
+
   const handleChange = useCallback(
     (patch: Partial<Settings>) => {
       const next = { ...settings, ...patch };
@@ -136,6 +152,25 @@ export default function Options() {
             <h1 className="text-lg font-semibold tracking-tight text-[var(--ed-ink)]">ShrinkIt</h1>
             <p className="text-sm text-[var(--ed-muted)]">{t(locale, 'options.subtitle')}</p>
           </div>
+          <nav
+            className="opt-nav flex flex-wrap items-center gap-2"
+            aria-label={t(locale, 'options.title')}
+          >
+            <button
+              type="button"
+              onClick={() => void openEditorPage('#/')}
+              className="opt-nav-link rounded-[6px] px-3 py-2 text-sm font-medium text-[var(--ed-accent)] transition hover:bg-[var(--ed-pill-bg)]"
+            >
+              {t(locale, 'options.backHome')}
+            </button>
+            <button
+              type="button"
+              onClick={() => void openEditorPage('#/tools')}
+              className="opt-nav-btn rounded-[6px] border border-[var(--ed-input-line)] bg-[var(--ed-surface)] px-4 py-2 text-sm font-medium text-[var(--ed-ink)] transition hover:border-[var(--ed-accent)] hover:text-[var(--ed-accent)]"
+            >
+              {t(locale, 'options.openTools')}
+            </button>
+          </nav>
         </div>
       </header>
 
@@ -155,7 +190,11 @@ export default function Options() {
           </div>
 
           {loaded ? (
-            <div className="space-y-6">
+            <form
+              className="space-y-6"
+              onSubmit={(event) => event.preventDefault()}
+              aria-label={t(locale, 'options.title')}
+            >
               <section
                 aria-labelledby="options-appearance-heading"
                 className="opt-card rounded-2xl border border-[var(--ed-line)] bg-[var(--ed-surface)] p-5"
@@ -468,12 +507,18 @@ export default function Options() {
                   </a>
                 </p>
               </section>
-            </div>
+            </form>
           ) : (
             <p className="text-sm text-[var(--ed-muted)]">{t(locale, 'options.loading')}</p>
           )}
         </div>
       </main>
+
+      <footer className="opt-footer border-t border-[var(--ed-line)]">
+        <p className="mx-auto w-full max-w-[960px] px-4 py-4 text-center text-sm text-[var(--ed-muted)]">
+          {t(locale, 'footer.rights', { year: new Date().getFullYear() })}
+        </p>
+      </footer>
     </div>
   );
 }

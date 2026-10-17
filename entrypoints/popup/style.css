@@ -711,14 +711,18 @@ body,
   cursor: default;
 }
 
-/* ---- Footer ---- */
+/* ---- Footer (3 buttons: Full Editor / Tools / Settings) ---- */
 .popup-footer {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 12px;
 }
 .popup-footer .popup-secondary {
-  flex: 1 1 0;
+  flex: 1 1 100px;
+  min-width: 0;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 /* ---- Scrollbar ---- */

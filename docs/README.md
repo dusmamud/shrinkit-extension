@@ -2,10 +2,12 @@
 
 Index of the `docs/` folder.
 
-| Document                         | What it covers                                                                                                                                                         |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [PERMISSIONS.md](PERMISSIONS.md) | Every permission the extension requests — why it is needed, what it does **not** do, and the single-purpose statement for Store review.                                |
-| [PRIVACY.md](PRIVACY.md)         | Privacy policy: no uploads, no servers, no analytics, no accounts. Images stay on the device; `storage.sync` holds only settings; the right-click fetch is local only. |
+| Document                         | What it covers                                                                                                                                                                         |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [PERMISSIONS.md](PERMISSIONS.md) | Every permission the extension requests — why it is needed, what it does **not** do, and the single-purpose statement for Store review.                                                |
+| [PRIVACY.md](PRIVACY.md)         | Privacy policy: no uploads, no servers, no analytics, no accounts. Images stay on the device; `storage.sync` holds only settings; the right-click fetch is local only.                 |
+| [ROUTING.md](ROUTING.md)         | Hash-routing contract: route table (13 routes), query-before-hash scheme for right-click/error preload, anchor rule, how to add a page, active-nav + skip-link + minimal-footer rules. |
+| [RESPONSIVE.md](RESPONSIVE.md)   | Responsive + a11y audit: breakpoints 320–1440, overflow guards, focus rules, 44px touch targets, and the open findings list (F1–F12) with fix status.                                  |
 
 Top-level docs (in the project root):
 

@@ -4,6 +4,15 @@
 // right-click image handoff (data: / http(s) / blob: URLs), and the
 // SHRINKIT_OPEN_EDITOR message that opens the Full Editor tab.
 //
+// Editor URLs use the shared hash-routing scheme (see docs/ROUTING.md
+// and src/router/): `editor.html[?query]#/route` — the query string
+// always comes BEFORE the hash, and the route is a hash route
+// (`#/`, `#/tools`, `#/tools/compress-to-50kb`, …). Right-click and
+// error landings always open Home (`#/`). The background NEVER emits
+// a legacy tool URL; a legacy slug arriving inside a
+// SHRINKIT_OPEN_EDITOR message is mapped to its hash route via the
+// shared router table (src/router/routes.ts).
+//
 // The service worker has NO DOM, NO URL.createObjectURL and NO canvas.
 // Every byte-fetch that needs a DOM/network context is delegated:
 //  - http(s) URLs -> the offscreen document (entrypoints/offscreen/)
@@ -23,18 +32,13 @@
 
 import { defineBackground } from 'wxt/utils/define-background';
 
+import { buildHash } from '../../src/router/hash';
+import { legacyToolToRoute, type Route } from '../../src/router/routes';
+
 const MENU_ID = 'shrinkit-resize';
 const EDITOR_PAGE = 'editor.html';
 const OFFSCREEN_PAGE = 'offscreen.html';
 const OFFSCREEN_TIMEOUT_MS = 65_000;
-
-// Editor tool slugs accepted for ?tool=. Unknown values fall back to
-// 'main'. This set MUST match the Editor's canonical TOOL_PARAM_TO_TAB
-// keys exactly ('main' | 'target50' | 'target20' | 'passport' |
-// 'social' | 'compare'). The old compress-* slugs are NOT accepted:
-// the Editor has no mapping for them, so such a ?tool= URL would
-// silently land on the wrong tab.
-const KNOWN_TOOLS = new Set(['main', 'target50', 'target20', 'passport', 'social', 'compare']);
 
 type OffscreenResultMessage = {
   type: 'SHRINKIT_OFFSCREEN_RESULT';
@@ -68,13 +72,28 @@ type PendingFetch = {
 // and the response arrive on different channels.
 const pendingFetches = new Map<string, PendingFetch>();
 
-function editorUrl(params: Record<string, string>): string {
+/**
+ * Build an Editor URL: `base[?query]#/route`. The query string always
+ * comes BEFORE the hash — anything after the first `#` is fragment, so
+ * a query placed after the hash would be invisible to URLSearchParams.
+ * The hash is produced by the shared router's buildHash, so the
+ * background can never emit a route the Editor does not understand.
+ * Pure function (takes the base URL explicitly) so tests can call it
+ * without a chrome runtime.
+ */
+export function buildEditorUrl(
+  baseUrl: string,
+  params: Record<string, string>,
+  route: Route,
+): string {
   const query = new URLSearchParams(params).toString();
-  return `${chrome.runtime.getURL(EDITOR_PAGE)}?${query}`;
+  return query ? `${baseUrl}?${query}${buildHash(route)}` : `${baseUrl}${buildHash(route)}`;
 }
 
-function openEditor(params: Record<string, string>): Promise<void> {
-  return chrome.tabs.create({ url: editorUrl(params) }).then(() => undefined);
+function openEditor(params: Record<string, string>, route: Route): Promise<void> {
+  return chrome.tabs
+    .create({ url: buildEditorUrl(chrome.runtime.getURL(EDITOR_PAGE), params, route) })
+    .then(() => undefined);
 }
 
 async function openErrorEditor(reason: string): Promise<void> {
@@ -86,7 +105,7 @@ async function openErrorEditor(reason: string): Promise<void> {
     // no-op: the Editor still shows the localized error from ?reason=.
     console.warn('ShrinkIt: session storage write failed for error key', error);
   }
-  await openEditor({ src: 'error', reason, key });
+  await openEditor({ src: 'error', reason, key }, '/');
 }
 
 function fileNameForDataUrl(dataUrl: string, fallbackBase: string): string {
@@ -125,10 +144,6 @@ function isSvgSourceUrl(srcUrl: string): boolean {
 
 function isSvgDataUrl(dataUrl: string): boolean {
   return dataUrl.startsWith('data:image/svg+xml');
-}
-
-function safeTool(value: unknown): string {
-  return typeof value === 'string' && KNOWN_TOOLS.has(value) ? value : 'main';
 }
 
 async function ensureOffscreenDocument(): Promise<void> {
@@ -230,7 +245,7 @@ async function handleContextMenuClick(
     const key = `rc-${Date.now()}`;
     const name = fileNameForDataUrl(srcUrl, `image-${Date.now()}`);
     await chrome.storage.session.set({ [key]: { name, dataUrl: srcUrl } });
-    await openEditor({ src: 'rightclick', key, tool: 'main' });
+    await openEditor({ src: 'rightclick', key }, '/');
     return;
   }
 
@@ -248,7 +263,7 @@ async function handleContextMenuClick(
       }
       const key = `rc-${Date.now()}`;
       await chrome.storage.session.set({ [key]: { name, dataUrl } });
-      await openEditor({ src: 'rightclick', key, tool: 'main' });
+      await openEditor({ src: 'rightclick', key }, '/');
     } catch (error) {
       console.warn('ShrinkIt: offscreen fetch failed for right-clicked image', error);
       await openErrorEditor('cors');
@@ -279,7 +294,7 @@ async function handleContextMenuClick(
           ? response.name
           : fileNameForDataUrl(response.dataUrl, `image-${Date.now()}`);
       await chrome.storage.session.set({ [key]: { name, dataUrl: response.dataUrl } });
-      await openEditor({ src: 'rightclick', key, tool: 'main' });
+      await openEditor({ src: 'rightclick', key }, '/');
     } catch (error) {
       // Content script absent (chrome:// pages, extension pages,
       // or pages where injection is blocked) or fetch failed.
@@ -335,10 +350,13 @@ export default defineBackground(() => {
       return;
     }
 
-    // Toolbar popup / Editor / Options ask to open the Editor.
+    // Toolbar popup / Editor / Options ask to open the Editor. A
+    // legacy tool slug in the message maps to its hash route via the
+    // shared router table; unknown/absent values land on Home ('/').
+    // The background NEVER emits a legacy tool URL itself.
     if (typed.type === 'SHRINKIT_OPEN_EDITOR') {
       const openMessage = message as OpenEditorMessage;
-      void openEditor({ tool: safeTool(openMessage.tool) });
+      void openEditor({}, legacyToolToRoute(openMessage.tool) ?? '/');
       return;
     }
   });

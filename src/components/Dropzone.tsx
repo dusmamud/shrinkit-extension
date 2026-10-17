@@ -98,7 +98,7 @@ export default function Dropzone({
   return (
     <div
       role="button"
-      tabIndex={0}
+      tabIndex={disabled ? -1 : 0}
       aria-label={t(locale, 'dropzone.title')}
       aria-disabled={disabled}
       data-testid="dropzone"
@@ -106,7 +106,11 @@ export default function Dropzone({
         if (!disabled) inputRef.current?.click();
       }}
       onKeyDown={(e) => {
-        if ((e.key === 'Enter' || e.key === ' ') && !disabled) inputRef.current?.click();
+        if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
+          // Space would otherwise scroll the page behind the dropzone.
+          e.preventDefault();
+          inputRef.current?.click();
+        }
       }}
       onDragEnter={(e) => {
         e.preventDefault();

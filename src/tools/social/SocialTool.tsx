@@ -158,19 +158,19 @@ export default function SocialTool({ locale }: SocialToolProps) {
   return (
     <div className="mx-auto box-border w-full min-w-0 max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 text-center">
-        <span className="mb-3 inline-flex items-center rounded-full border border-[#007bff]/20 bg-[#007bff]/10 px-3 py-1 text-xs font-medium text-[#007bff]">
+        <span className="mb-3 inline-flex items-center rounded-full border border-taccent/20 bg-taccent/10 px-3 py-1 text-xs font-medium text-taccent">
           {t(locale, 'tools.social.badge')}
         </span>
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-tink sm:text-3xl">
           {t(locale, 'tools.social.title')}
         </h2>
-        <p className="mx-auto max-w-2xl text-sm text-slate-500 sm:text-base">
+        <p className="mx-auto max-w-2xl text-sm text-tmuted sm:text-base">
           {t(locale, 'tools.social.subtitle')}
         </p>
       </div>
 
       <div className="mb-6 flex min-w-0 flex-col items-center justify-center gap-3">
-        <label className="text-sm font-medium break-words text-slate-900">
+        <label className="text-sm font-medium break-words text-tink">
           {t(locale, 'tools.social.choosePreset')}
         </label>
         <div className="grid box-border w-full min-w-0 max-w-2xl grid-cols-2 gap-2 sm:grid-cols-4">
@@ -181,12 +181,12 @@ export default function SocialTool({ locale }: SocialToolProps) {
               onClick={() => setPresetId(item.id)}
               className={`flex w-full min-w-0 max-w-full cursor-pointer flex-col items-center rounded-xl border px-3.5 py-2 text-center text-xs font-medium break-words transition ${
                 presetId === item.id
-                  ? 'border-[#007bff] bg-[#007bff]/10 font-semibold text-[#007bff] shadow-sm ring-1 ring-[#007bff]'
-                  : 'border-slate-200 bg-white text-slate-900 hover:border-[#007bff]/50 hover:bg-slate-50'
+                  ? 'border-taccent bg-taccent/10 font-semibold text-taccent shadow-sm ring-1 ring-taccent'
+                  : 'border-tline bg-tsurface text-tink hover:border-taccent/50 hover:bg-tsurface2'
               }`}
             >
               <span className="min-w-0 break-words">{presetName(locale, item.id)}</span>
-              <span className="mt-0.5 min-w-0 break-words text-[11px] text-slate-500">
+              <span className="mt-0.5 min-w-0 break-words text-[11px] text-tmuted">
                 {item.width} × {item.height} ({aspectLabel(item.width, item.height)})
               </span>
             </button>
@@ -195,17 +195,17 @@ export default function SocialTool({ locale }: SocialToolProps) {
       </div>
 
       <div className="mb-6 flex min-w-0 flex-wrap items-center justify-center gap-2 sm:gap-3">
-        <span className="text-xs font-medium break-words text-slate-500">
+        <span className="text-xs font-medium break-words text-tmuted">
           {t(locale, 'tools.social.modeLabel')}
         </span>
-        <div className="inline-flex min-w-0 max-w-full rounded-lg border border-slate-200 bg-white p-1">
+        <div className="inline-flex min-w-0 max-w-full rounded-lg border border-tline bg-tsurface p-1">
           <button
             type="button"
             onClick={() => setFitMode('crop-fill')}
             className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition ${
               fitMode === 'crop-fill'
-                ? 'bg-[#007bff] text-white shadow-sm'
-                : 'text-slate-500 hover:text-slate-900'
+                ? 'bg-taccent text-white shadow-sm'
+                : 'text-tmuted hover:text-tink'
             }`}
           >
             {t(locale, 'tools.social.modeCrop')}
@@ -215,8 +215,8 @@ export default function SocialTool({ locale }: SocialToolProps) {
             onClick={() => setFitMode('fit-pad')}
             className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition ${
               fitMode === 'fit-pad'
-                ? 'bg-[#007bff] text-white shadow-sm'
-                : 'text-slate-500 hover:text-slate-900'
+                ? 'bg-taccent text-white shadow-sm'
+                : 'text-tmuted hover:text-tink'
             }`}
           >
             {t(locale, 'tools.social.modeFit')}
@@ -228,6 +228,7 @@ export default function SocialTool({ locale }: SocialToolProps) {
         <div
           role="button"
           tabIndex={0}
+          aria-label={t(locale, 'tools.social.dropTitle')}
           onDragOver={(e) => {
             e.preventDefault();
             setDragging(true);
@@ -240,10 +241,14 @@ export default function SocialTool({ locale }: SocialToolProps) {
           }}
           onClick={() => fileInputRef.current?.click()}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
+            if (e.key === 'Enter' || e.key === ' ') {
+              // Space would otherwise scroll the page behind the dropzone.
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
           }}
-          className={`relative flex min-w-0 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-white p-6 text-center break-words shadow-sm transition sm:p-10 ${
-            dragging ? 'border-[#007bff] bg-[#007bff]/5' : 'border-slate-200 hover:border-[#007bff]'
+          className={`relative flex min-w-0 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-tsurface p-6 text-center break-words shadow-sm transition sm:p-10 ${
+            dragging ? 'border-taccent bg-taccent/5' : 'border-tline hover:border-taccent'
           }`}
         >
           <input
@@ -256,10 +261,10 @@ export default function SocialTool({ locale }: SocialToolProps) {
               e.target.value = '';
             }}
           />
-          <p className="mb-1 break-words text-lg font-semibold text-slate-900">
+          <p className="mb-1 break-words text-lg font-semibold text-tink">
             {t(locale, 'tools.social.dropTitle')}
           </p>
-          <p className="break-words text-xs text-slate-500">
+          <p className="break-words text-xs text-tmuted">
             {t(locale, 'tools.social.dropHint', {
               width: preset.width,
               height: preset.height,
@@ -268,11 +273,15 @@ export default function SocialTool({ locale }: SocialToolProps) {
           </p>
         </div>
       ) : (
-        <div className="box-border min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+        <div className="box-border min-w-0 rounded-2xl border border-tline bg-tsurface p-4 shadow-sm sm:p-6 lg:p-8">
           <div className="flex min-w-0 flex-col items-center gap-8 md:flex-row">
-            <div className="relative flex max-h-80 w-full min-w-0 max-w-80 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner">
+            <div className="relative flex max-h-80 w-full min-w-0 max-w-80 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-tline bg-tsurface2 shadow-inner">
               {resultUrl ? (
-                <img src={resultUrl} alt="" className="h-auto max-h-80 w-full object-contain" />
+                <img
+                  src={resultUrl}
+                  alt={file?.name ?? ''}
+                  className="h-auto max-h-80 w-full object-contain"
+                />
               ) : null}
               {processing && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-xs font-semibold text-white">
@@ -282,35 +291,35 @@ export default function SocialTool({ locale }: SocialToolProps) {
             </div>
 
             <div className="w-full min-w-0 flex-1 space-y-4">
-              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
-                <span className="min-w-0 max-w-full truncate text-sm font-semibold break-words text-slate-900 sm:max-w-55">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b border-tline pb-3">
+                <span className="min-w-0 max-w-full truncate text-sm font-semibold break-words text-tink sm:max-w-55">
                   {file.name}
                 </span>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="shrink-0 cursor-pointer text-xs text-slate-500 transition hover:text-red-600"
+                  className="shrink-0 cursor-pointer text-xs text-tmuted transition hover:text-red-600"
                 >
                   {t(locale, 'tools.social.remove')}
                 </button>
               </div>
 
-              <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs">
+              <div className="space-y-2 rounded-xl border border-tline bg-tsurface2 p-4 text-xs">
                 <div className="flex min-w-0 flex-wrap justify-between gap-x-3 gap-y-1">
-                  <span className="text-slate-500">{t(locale, 'tools.social.platform')}</span>
-                  <span className="font-semibold break-words text-right text-slate-900">
+                  <span className="text-tmuted">{t(locale, 'tools.social.platform')}</span>
+                  <span className="font-semibold break-words text-right text-tink">
                     {presetName(locale, preset.id)}
                   </span>
                 </div>
                 <div className="flex min-w-0 flex-wrap justify-between gap-x-3 gap-y-1">
-                  <span className="text-slate-500">{t(locale, 'tools.social.aspectRatio')}</span>
-                  <span className="font-semibold break-words text-right text-slate-900">
+                  <span className="text-tmuted">{t(locale, 'tools.social.aspectRatio')}</span>
+                  <span className="font-semibold break-words text-right text-tink">
                     {aspectLabel(preset.width, preset.height)}
                   </span>
                 </div>
                 <div className="flex min-w-0 flex-wrap justify-between gap-x-3 gap-y-1">
-                  <span className="text-slate-500">{t(locale, 'tools.social.dimensions')}</span>
-                  <span className="font-semibold break-words text-right text-slate-900">
+                  <span className="text-tmuted">{t(locale, 'tools.social.dimensions')}</span>
+                  <span className="font-semibold break-words text-right text-tink">
                     {preset.width} × {preset.height} px
                   </span>
                 </div>
@@ -323,7 +332,7 @@ export default function SocialTool({ locale }: SocialToolProps) {
                   <button
                     type="button"
                     onClick={handleDownload}
-                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#007bff] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#016df0] sm:w-auto"
+                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-taccent px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#016df0] sm:w-auto"
                   >
                     {t(locale, 'tools.social.download')}
                   </button>
@@ -331,7 +340,7 @@ export default function SocialTool({ locale }: SocialToolProps) {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-900 transition hover:bg-slate-50 sm:w-auto"
+                  className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-tline px-4 py-3 text-sm font-medium text-tink transition hover:bg-tsurface2 sm:w-auto"
                 >
                   {t(locale, 'tools.social.changePhoto')}
                 </button>

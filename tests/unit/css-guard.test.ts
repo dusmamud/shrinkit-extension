@@ -24,17 +24,16 @@ function imgTags(source: string): string[] {
 }
 
 /**
- * True when a JSX size expression pins to 32px: either the literal `32`
- * or a named constant defined as 32 in the same file
- * (`const LOGO_SIZE = 32;` + `width={LOGO_SIZE}`).
+ * True when a JSX size expression pins to 34px: either the literal `34`
+ * or a named constant defined as 34 in the same file.
  */
-function pinsTo32(expr: string | undefined, source: string): boolean {
+function pinsTo34(expr: string | undefined, source: string): boolean {
   if (expr === undefined) return false;
   const trimmed = expr.trim();
-  if (trimmed === '32') return true;
+  if (trimmed === '34') return true;
   const name = trimmed.match(/^([A-Za-z_$][\w$]*)$/)?.[1];
   if (!name) return false;
-  return new RegExp(`const\\s+${name}\\s*=\\s*32\\b`).test(source);
+  return new RegExp(`const\\s+${name}\\s*=\\s*34\\b`).test(source);
 }
 
 function jsxAttr(tag: string, name: string): string | undefined {
@@ -62,16 +61,20 @@ describe('Logo / Tailwind hardening guard', () => {
     expect(logo).toContain('resolveIconUrl');
   });
 
-  it('Editor.tsx header logo <img> pins to 32px via width/height attrs + maxWidth/maxHeight style', () => {
-    const editor = readSource('entrypoints/editor/Editor.tsx');
-    const logoImg = imgTags(editor).find((tag) => tag.includes('logoSrc'));
-    expect(logoImg, 'expected an <img> rendering logoSrc in Editor.tsx').toBeDefined();
-    // Literal `width={32}` or a named constant defined as 32 in the file
-    // (`const LOGO_SIZE = 32` + `width={LOGO_SIZE}`) — both pin to 32px.
-    expect(pinsTo32(jsxAttr(logoImg!, 'width'), editor)).toBe(true);
-    expect(pinsTo32(jsxAttr(logoImg!, 'height'), editor)).toBe(true);
-    expect(pinsTo32(styleProp(logoImg!, 'maxWidth'), editor)).toBe(true);
-    expect(pinsTo32(styleProp(logoImg!, 'maxHeight'), editor)).toBe(true);
+  it('Header.tsx logo <img> pins to 34px via width/height attrs + inline style (web parity)', () => {
+    // The header lives in Header.tsx (Editor.tsx renders <Header/>).
+    // Web parity: the header brand icon renders at 34px.
+    const header = readSource('src/components/layout/Header.tsx');
+    const logoImg = imgTags(header).find((tag) => tag.includes('resolveIconUrl()'));
+    expect(logoImg, 'expected an <img> rendering resolveIconUrl() in Header.tsx').toBeDefined();
+    // Literal `width={34}` or a named constant defined as 34 in the file
+    // (`const LOGO_SIZE = 34` + `width={LOGO_SIZE}`) — both pin to 34px.
+    expect(pinsTo34(jsxAttr(logoImg!, 'width'), header)).toBe(true);
+    expect(pinsTo34(jsxAttr(logoImg!, 'height'), header)).toBe(true);
+    expect(pinsTo34(styleProp(logoImg!, 'width'), header)).toBe(true);
+    expect(pinsTo34(styleProp(logoImg!, 'height'), header)).toBe(true);
+    expect(pinsTo34(styleProp(logoImg!, 'maxWidth'), header)).toBe(true);
+    expect(pinsTo34(styleProp(logoImg!, 'maxHeight'), header)).toBe(true);
   });
 
   it('wxt.config.ts wires the @tailwindcss/vite plugin', () => {

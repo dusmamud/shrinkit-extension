@@ -14,8 +14,10 @@
  *   2. Total built CSS is suspiciously small (<= 20000 bytes).
  *   3. No Tailwind utility marker is present in the built CSS — i.e. the
  *      plugin is not generating utilities even though theme tokens exist.
- *   4. entrypoints/editor/Editor.tsx's logo <img> lacks width={32}
- *      height={32}, so the header logo can blow up to natural size.
+ *   4. src/components/layout/Header.tsx's logo <img> lacks width={34}
+ *      height={34}, so the header logo can blow up to natural size.
+ *      (Web parity: the header brand icon renders at 34px; the popup
+ *      keeps its own 32px pin, checked by check-responsive.mjs.)
  *
  * Usage: `npm run check:css` (must run AFTER `npm run build`).
  * No dependencies beyond node:fs / node:path / node:url.
@@ -29,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ASSETS_DIR = path.join(ROOT, '.output', 'chrome-mv3', 'assets');
-const EDITOR_PATH = path.join(ROOT, 'entrypoints', 'editor', 'Editor.tsx');
+const HEADER_PATH = path.join(ROOT, 'src', 'components', 'layout', 'Header.tsx');
 
 let failures = 0;
 function pass(label, detail = '') {
@@ -108,39 +110,48 @@ if (foundMarkers.length >= 1) {
   );
 }
 
-// --- 4. Editor logo <img> must be size-pinned ----------------------------------
-// Accepts the literal `width={32}` or a named constant defined as 32 in
-// the same file (`const LOGO_SIZE = 32` + `width={LOGO_SIZE}`) — both pin
-// the logo to 32px; the old broken code had neither.
-function pinsTo32(expr, source) {
+// --- 4. Header logo <img> must be size-pinned ---------------------------------
+// The header lives in Header.tsx (not Editor.tsx): the shell renders
+// <Header/>. Accepts the literal `width={34}` or a named constant defined
+// as 34 in the same file (`const LOGO_SIZE = 34` + `width={LOGO_SIZE}`) —
+// both pin the logo to 34px (web Header.astro parity); the old broken
+// code had neither. The <img> also carries inline width/height/maxWidth/
+// maxHeight 34 in style — checked by check-responsive.mjs.
+function pinsTo34(expr, source) {
   if (expr === undefined) return false;
   const trimmed = expr.trim();
-  if (trimmed === '32') return true;
+  if (trimmed === '34') return true;
   const name = trimmed.match(/^([A-Za-z_$][\w$]*)$/)?.[1];
   if (!name) return false;
-  return new RegExp(`const\\s+${name}\\s*=\\s*32\\b`).test(source);
+  return new RegExp(`const\\s+${name}\\s*=\\s*34\\b`).test(source);
 }
 
-if (!existsSync(EDITOR_PATH)) {
-  fail('Editor.tsx logo img has width={32} height={32}', 'entrypoints/editor/Editor.tsx not found');
+if (!existsSync(HEADER_PATH)) {
+  fail(
+    'Header.tsx logo img has width={34} height={34}',
+    'src/components/layout/Header.tsx not found',
+  );
 } else {
-  const editor = readFileSync(EDITOR_PATH, 'utf8');
-  // The header logo <img> is the one rendering logoSrc.
-  const imgTags = editor.match(/<img[\s\S]*?\/>/g) ?? [];
-  const logoImg = imgTags.find((tag) => tag.includes('logoSrc'));
+  const header = readFileSync(HEADER_PATH, 'utf8');
+  // The header logo <img> is the one rendering resolveIconUrl().
+  const imgTags = header.match(/<img[\s\S]*?\/>/g) ?? [];
+  const logoImg = imgTags.find((tag) => tag.includes('resolveIconUrl()'));
   if (!logoImg) {
-    fail('Editor.tsx logo img has width={32} height={32}', 'no <img> rendering logoSrc found');
+    fail(
+      'Header.tsx logo img has width={34} height={34}',
+      'no <img> rendering resolveIconUrl() found',
+    );
   } else {
     const widthExpr = logoImg.match(/width=\{([^}]+)\}/)?.[1];
     const heightExpr = logoImg.match(/height=\{([^}]+)\}/)?.[1];
-    const hasWidth = pinsTo32(widthExpr, editor);
-    const hasHeight = pinsTo32(heightExpr, editor);
+    const hasWidth = pinsTo34(widthExpr, header);
+    const hasHeight = pinsTo34(heightExpr, header);
     if (hasWidth && hasHeight) {
-      pass('Editor.tsx logo img has width={32} height={32}');
+      pass('Header.tsx logo img has width={34} height={34}');
     } else {
       fail(
-        'Editor.tsx logo img has width={32} height={32}',
-        `found <img> with width pinned to 32: ${hasWidth}, height pinned to 32: ${hasHeight}`,
+        'Header.tsx logo img has width={34} height={34}',
+        `found <img> with width pinned to 34: ${hasWidth}, height pinned to 34: ${hasHeight}`,
       );
     }
   }

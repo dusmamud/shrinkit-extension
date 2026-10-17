@@ -8,20 +8,133 @@ Stack: **WXT + React 19 + TypeScript (strict) + Tailwind CSS v4**, Manifest V3 (
 
 All entrypoints live under `entrypoints/`. WXT builds each one into the MV3 bundle.
 
-| Entrypoint    | What it is                                    | What it does                                                                                                                                                                                     |
-| ------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `popup/`      | Toolbar popup (React)                         | Quick resize: 1–5 images, preset picker, Resize + Download, and a Full Editor button. Closes when it loses focus, so it stays small and single-purpose.                                          |
-| `editor/`     | Full Editor page (React, opened in a new tab) | All 6 tools (Main, Compress to 50 KB, Compress to 20 KB, Passport Photo Maker, Social Media Resizer, Compare Images), batch up to 50 images, per-image settings, download (single files or ZIP). |
-| `background/` | Service worker (plain TypeScript, no React)   | Owns the context menu (“Resize with ShrinkIt”), receives right-click events, and routes the clicked image into the editor via the offscreen document and session storage.                        |
-| `options/`    | Options page (React)                          | Settings UI: language, theme, defaults. Reads/writes the same settings store as the popup and editor.                                                                                            |
-| `offscreen/`  | Offscreen document                            | Fetches the bytes of a right-clicked image and hands them to the editor flow. Exists because MV3 service workers have no DOM or Canvas, so they cannot fetch-then-decode an image themselves.    |
-| `content/`    | Content script                                | Page-side support for the right-click flow: helps identify the image the user clicked so the background worker can resolve it to a URL.                                                          |
+| Entrypoint    | What it is                                    | What it does                                                                                                                                                                                                                                                                                                                                    |
+| ------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `popup/`      | Toolbar popup (React)                         | Quick resize: 1–5 images, preset picker, Resize + Download, and a Full Editor button. Closes when it loses focus, so it stays small and single-purpose.                                                                                                                                                                                         |
+| `editor/`     | Full Editor page (React, opened in a new tab) | Multi-page app with hash routing (`editor.html#/route`, see [docs/ROUTING.md](docs/ROUTING.md)): Home (hero tool + HowItWorks + InfoSections), Resize, Tools hub, 5 tool pages (one tool each), About, Contact, Privacy, Terms, 404 — all sharing the Header/Footer layout. Main resizer batch up to 50 images, download (single files or ZIP). |
+| `background/` | Service worker (plain TypeScript, no React)   | Owns the context menu (“Resize with ShrinkIt”), receives right-click events, and routes the clicked image into the editor via the offscreen document and session storage.                                                                                                                                                                       |
+| `options/`    | Options page (React)                          | Settings UI: language, theme, defaults. Reads/writes the same settings store as the popup and editor.                                                                                                                                                                                                                                           |
+| `offscreen/`  | Offscreen document                            | Fetches the bytes of a right-clicked image and hands them to the editor flow. Exists because MV3 service workers have no DOM or Canvas, so they cannot fetch-then-decode an image themselves.                                                                                                                                                   |
+| `content/`    | Content script                                | Page-side support for the right-click flow: helps identify the image the user clicked so the background worker can resolve it to a URL.                                                                                                                                                                                                         |
 
 Rules:
 
 - The service worker (`background/`) is plain TypeScript — no React, no DOM. It only coordinates: menus, routing, storage.
 - All DOM/Canvas image work happens in `popup/`, `editor/`, or `offscreen/` — never in the service worker.
 - The popup and the editor share the same image engine (`src/lib/`) and the same tool definitions (`src/tools/`), so a resize behaves identically in both.
+
+## Multi-page app — hash router, layout, pages
+
+The editor is a multi-page app, not a single page with tabs. One built
+file (`editor.html`) serves every route; the route is the URL fragment.
+Full scheme, route table, and the query-before-hash rule live in
+[docs/ROUTING.md](docs/ROUTING.md). This section states the architecture
+the router implements.
+
+### Router
+
+- **Route source:** `window.location.hash` (`#/`, `#/tools`, …). The
+  router renders the matching page component on initial load and on
+  every `hashchange`. Navigation never reloads the page.
+- **Default:** empty / missing hash renders `#/` (Home).
+- **Unknown hash → 404 page**, never a blank page, never a crash.
+- **Query is separate:** handoff parameters (`?src=…&key=…`,
+  `?src=error&reason=…`) live in `window.location.search`, before the
+  hash, and are read once on the initial load. The router never reads
+  query parameters out of the fragment.
+- **Legacy `?tool=`:** the previous build's `?tool=<tab-slug>` links map
+  to their hash route when no hash is present. New code must not
+  generate `?tool=` links.
+- **No path routing, no `pushState` to a path.** Extension pages are
+  files under `chrome-extension://`; a path-style URL is a missing
+  file. Internal links are hash links only.
+- **Per-route side effects:** scroll-to-top on every route change;
+  localised `document.title` per page.
+
+### Layout — shared Header / Footer
+
+Every editor page renders the same layout shell:
+
+- **Header** (ported from web `Header`): logo pinned 34px (web
+  parity) + site name, primary nav — Resize (`#/`), Tools (`#/tools`),
+  How it works (`#/#how-it-works`, anchor on Home), Privacy
+  (`#/privacy`), Contact (`#/contact`) — with the current route marked
+  active, language switcher, theme switcher. About is reached via the
+  Footer. Header inner width 1075px.
+- **Footer** (ported from web `Footer`): product / tools / legal link
+  columns (including About, Terms, Contact) + copyright bar. Footer
+  brand mark pinned 30px. All links are plain hash `href`s — no
+  `onClick` routing.
+- **Anchor suffix:** `#/#how-it-works` is route `/` scrolled to the
+  `how-it-works` element; the router splits the hash on the second `#`
+  and scrolls to the anchor instead of to the top.
+- **Exception:** `#/resize` renders the minimal footer (copyright bar
+  only), matching web `/resize`.
+- **Main content** is the only part that changes between routes.
+
+### Pages
+
+| Page                 | Route                          | Content                                                      |
+| -------------------- | ------------------------------ | ------------------------------------------------------------ |
+| Home                 | `#/`                           | Hero + main resizer + HowItWorks + InfoSections + tools grid |
+| Resize               | `#/resize`                     | Main resizer, standalone page, minimal footer                |
+| Tools hub            | `#/tools`                      | Links to the five tool pages                                 |
+| Compress to 50 KB    | `#/tools/compress-to-50kb`     | Target-size tool, 50 KB                                      |
+| Compress to 20 KB    | `#/tools/compress-to-20kb`     | Target-size tool, 20 KB                                      |
+| Passport Photo Maker | `#/tools/passport-photo-maker` | Passport tool                                                |
+| Social Media Resizer | `#/tools/social-media-resizer` | Social tool                                                  |
+| Compare Images       | `#/tools/compare-images`       | Compare tool                                                 |
+| About                | `#/about`                      | About page                                                   |
+| Contact              | `#/contact`                    | Contact page                                                 |
+| Privacy              | `#/privacy`                    | Privacy page                                                 |
+| Terms                | `#/terms`                      | Terms page                                                   |
+| Not found            | any other hash                 | 404 page + link back Home                                    |
+
+Page components live under `src/pages/` (tool pages in
+`src/pages/tools/`), named `*Page.tsx` (`HomePage.tsx`,
+`ToolsHubPage.tsx`, …). Home sections live in `src/components/home/`,
+Header/Footer in `src/components/layout/`. Each tool page renders one tool in
+full — the tool components in `src/tools/` are reused unchanged; they
+are definitions + UI, not pages. The popup and Options page are separate
+entrypoints, not router pages (see [docs/ROUTING.md](docs/ROUTING.md)).
+
+### Invariants (must hold after every change)
+
+- **Tailwind wired:** Tailwind's Vite plugin stays in `wxt.config.ts`,
+  and every entrypoint imports `global.css` before its own stylesheet.
+  `npm run check:css` must pass on the built CSS.
+- **Logo pinning:** editor Header brand logo pinned 34px (web
+  parity), popup logo 32px, footer brand mark 30px — each via
+  width/height attributes + inline style + CSS, never utilities alone.
+  Note: the pre-rebuild parity invariant said 32px for the editor
+  header; the landed Header uses the web's 34px. The coordinator
+  decides whether 34px stands or 32px is restored — the docs record
+  the landed 34px.
+- **Formats gate:** every upload/filter path uses the single shared
+  `isSupportedInputFile` check (extension-based), never an ad-hoc
+  `file.type` prefix check. Input JPG/JPEG/PNG/GIF/WebP/BMP/AVIF;
+  output JPG/PNG/WebP/GIF; SVG rejected everywhere.
+- **Right-click slugs:** background, editor, and popup agree on the
+  URL contract — right-click opens
+  `editor.html?src=rightclick&key=<key>#/`; errors open
+  `editor.html?src=error&reason=<code>#/`; `SHRINKIT_OPEN_EDITOR`
+  opens `editor.html#/`. Query always before the hash.
+- **`default_locale` absent:** the manifest must not set
+  `default_locale` — the extension uses custom JSON i18n
+  (`src/i18n/messages/en|es|pt.json`), not `chrome.i18n`, and there is
+  no `_locales/` subtree.
+- **Tokens byte-identical:** the 59 `--t-*` values in Light plus the 59
+  in Dark 2 (Graphite) in `src/styles/global.css` match the web app
+  exactly. `--ed-*` / `--accent` names are aliases onto `--t-*`, never
+  a second source of truth.
+- **Containers:** editor header inner 1075px, editor main wrapper
+  960px, dropzone 940px, settings form 650px, popup 400px wide. No
+  container wider than the 1075px header cap.
+- **Routing:** no path-style editor URL, no `pushState` to a path, no
+  tab-slug routes. Unknown hashes render the 404 page.
+- **No hardcoded user-visible strings:** every user-visible string
+  goes through `t()` (en / es / pt). No `TODO` / `FIXME` / `console.*`
+  in `entrypoints/`, `src/`, `tests/`.
 
 ## Image engine — `src/lib/`
 
@@ -56,7 +169,7 @@ Supporting concerns in `src/lib/`:
 5. **Social Media Resizer** — preset dimensions for common social formats.
 6. **Compare Images** — original vs. resized, side by side, so the user can judge quality before downloading.
 
-Each tool is a definition (its inputs, defaults, constraints, and which engine options it sets) plus its UI. The popup exposes a small subset (quick resize presets); the editor exposes all six in full. Tool logic is never duplicated between popup and editor — both import from `src/tools/`.
+Each tool is a definition (its inputs, defaults, constraints, and which engine options it sets) plus its UI. The popup exposes a small subset (quick resize presets); the editor exposes all six in full — the main resizer on Home (`#/`) and `#/resize`, the other five each on their own tool page. Tool logic is never duplicated between popup and editor — both import from `src/tools/`.
 
 ## i18n — `src/lib/i18n` + `src/i18n/`
 
@@ -91,7 +204,9 @@ User right-clicks an image
   -> background writes the bytes to chrome.storage.session
        (session storage: in-memory, cleared when the browser session ends,
         never synced, never persisted to disk by the extension)
-  -> background opens the Full Editor in a new tab (chrome.tabs)
+  -> background opens the Full Editor in a new tab (chrome.tabs) at
+     `editor.html?src=rightclick&key=<key>#/` (query before the hash;
+     see [docs/ROUTING.md](docs/ROUTING.md))
   -> editor reads the bytes from chrome.storage.session, decodes them,
        and presents the image ready to resize
   -> editor clears the session entry once consumed

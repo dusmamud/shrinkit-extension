@@ -96,6 +96,74 @@
   box-sizing: border-box;
 }
 
+/* Header nav: "Back to Home" text link + "Open Tools" outlined button,
+   pushed to the right of the brand; wraps below it on narrow screens. */
+.opt-nav {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.opt-nav-link {
+  border: none;
+  background: transparent;
+  color: var(--ed-accent);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1.5;
+  transition: background-color 0.15s ease;
+}
+
+.opt-nav-link:hover {
+  background-color: var(--ed-pill-bg);
+}
+
+.opt-nav-btn {
+  border: 1px solid var(--ed-input-line);
+  background-color: var(--ed-surface);
+  color: var(--ed-ink);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1.5;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.opt-nav-btn:hover {
+  border-color: var(--ed-accent);
+  color: var(--ed-accent);
+}
+
+/* Minimal footer: copyright bar only, same 960px page width. */
+.opt-footer {
+  border-top: 1px solid var(--ed-line);
+  margin-top: 8px;
+}
+
+.opt-footer p {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 960px;
+  padding: 16px;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--ed-muted);
+  line-height: 1.5;
+}
+
 /* Settings form column: 650px centered inside the 960px page. */
 .opt-col {
   margin: 0 auto;
@@ -340,6 +408,17 @@ a:focus-visible {
     padding: 16px;
   }
 
+  .opt-nav {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .opt-nav-link,
+  .opt-nav-btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
   .opt-btn-primary {
     width: 100%;
     max-width: 320px;
@@ -386,6 +465,8 @@ a:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .opt-swatch,
   .opt-btn-primary,
+  .opt-nav-link,
+  .opt-nav-btn,
   .opt-input,
   .opt-select,
   .opt-num,

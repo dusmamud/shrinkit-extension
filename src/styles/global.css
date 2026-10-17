@@ -575,3 +575,224 @@ nav {
     color: LinkText;
   }
 }
+
+/* ==========================================================================
+   Responsive + accessibility additions — appended, tokens untouched.
+   No --t-* value is redefined here; every colour below references a --t-*
+   token (or a system colour in forced-colors mode).
+
+   Cascade note: entrypoint stylesheets load AFTER this file (each
+   entrypoints/<entry>/main.tsx imports global.css first, then its own
+   style.css), and this file is unlayered while Tailwind utilities live in
+   @layer utilities — so a plain rule here beats an equal Tailwind utility.
+   Overrides below therefore use selectors that outrank the entrypoint
+   rule they target (nav element + class, .ed-page prefix) instead of
+   relying on source order. Nothing here changes size on :hover / :active,
+   so nothing below can cause layout shift on interaction.
+   ========================================================================== */
+
+/* --- Overflow guards (supplement) ----------------------------------------
+   Base guards already live above: html/body overflow-x: clip,
+   * min-width: 0 + border-box, img/video/canvas max-width: 100% +
+   height: auto. What was still missing: */
+
+/* SVG: max-width cap + aspect-correct height. Scoped to SVGs carrying
+   width/height attributes (icons) on purpose: the two class-sized SVGs —
+   the Dropzone dashed border (h-full w-full) and the popup dashed border
+   (.popup-dropzone-border) — keep their class-driven height. Pinned logos
+   (header/footer brand imgs) carry width/height attributes
+   PLUS inline styles, and inline styles outrank this stylesheet, so the
+   32/34/30px pins are unaffected. */
+svg {
+  max-width: 100%;
+}
+svg[width][height] {
+  height: auto;
+}
+
+/* Entry roots never scroll horizontally. */
+#root {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* Long unbroken strings (filenames, URLs, error text) wrap instead of
+   forcing overflow. overflow-wrap only acts when a line would overflow,
+   so normal text is unaffected. */
+p,
+li,
+h1,
+h2,
+h3,
+a {
+  overflow-wrap: break-word;
+}
+
+/* Form controls can always shrink to their container. (The existing
+   max-width: 100% guard above only kicks in at 600px and under; this one
+   applies at every width. Fixed-width inputs such as the 68px size fields
+   are narrower than their container, so this is a no-op for them.) */
+input,
+select,
+textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Embedded content never exceeds its container. */
+iframe,
+object,
+embed {
+  max-width: 100%;
+}
+
+/* --- Visible keyboard focus -----------------------------------------------
+   2px accent outline, matching the popup/options focus rules. This is the
+   rule the editor shell and the tool pages were missing (they relied on
+   the browser default). It also repairs `outline-none` controls (e.g. the
+   target-size KB input): on keyboard focus they now show the accent
+   outline instead of only a 1px border-colour change. Deliberately no
+   `:focus { outline: none; }` rule anywhere — mouse focus keeps the
+   browser default, keyboard focus always stays visible. */
+:focus-visible {
+  outline: 2px solid var(--t-accent);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline-color: CanvasText;
+  }
+}
+
+/* --- 44px touch targets in nav --------------------------------------------
+   Reached with static min-height + padding-block (padding counts inside
+   min-height under the global border-box rule, so the total never
+   overshoots). No :hover/:active size change anywhere, so no layout shift
+   on interaction. Covers: the Header.tsx desktop/mobile nav links and CTA, and
+   the Options nav buttons. The hamburger already pins 44px in Header.tsx;
+   this rule agrees with it. Footer links are NOT nav — they stay at
+   reading size (see docs/RESPONSIVE.md findings). */
+nav a,
+nav button {
+  min-height: 44px;
+  padding-block: 12px;
+}
+
+nav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Breakpoints (web parity) ----------------------------------------------
+   Web breakpoints: 1440 / 1075 / 960 / 768 / 600 / 480 / 400 / 390 / 360 /
+   320. The 320–960 steps already exist above for shared classes; the
+   blocks below add the hero scale, header compression, grid collapse and
+   settings stack that were still missing. Inside a media body, only
+   relative or sub-cap values are used — no container ever grows past its
+   web cap. */
+
+/* >= 1440px: containers stay capped — no full-width stretch. Values equal
+   the web caps (header 1075, main 960, settings 650). */
+@media (min-width: 1440px) {
+  .ed-page .ed-main-inner {
+    max-width: 960px;
+  }
+  #resize-form-offline .resize-form-container {
+    max-width: 650px;
+  }
+}
+
+/* <= 960px: long page headings (About / Contact / Privacy / Terms, whose
+   h1 is 40px) step down. The hero keeps its own Tailwind 32/40/50px scale
+   above 640px, so hero rules only start at 480px. */
+@media (max-width: 960px) {
+  main h1[class*='text-[2.5rem]'] {
+    font-size: 2rem;
+  }
+}
+
+/* <= 768px: settings format/quality row tightens. Header tabs and the
+   mobile hamburger are already handled by the editor/header rules. */
+@media (max-width: 768px) {
+  #resize-form-offline .format-quality-area {
+    gap: 24px;
+  }
+}
+
+/* <= 600px: settings title steps down; settings format/quality row
+   tightens to the web 600px value; header compresses. */
+@media (max-width: 600px) {
+  #resize-form-offline .format-quality-area {
+    gap: 18px;
+  }
+  #resize-form-offline .title {
+    font-size: 1.75rem;
+  }
+}
+
+/* <= 480px: hero heading scales below its 32px base; page headings and
+   the settings title follow; the submit button goes full-width (web
+   480px rule, capped at 320px). */
+@media (max-width: 480px) {
+  h1[class*='text-[32px]'] {
+    font-size: 28px;
+  }
+  main h1[class*='text-[2.5rem]'] {
+    font-size: 1.75rem;
+  }
+  main h1.text-3xl {
+    font-size: 26px;
+  }
+  #resize-form-offline .title {
+    font-size: 1.5rem;
+  }
+  #resize-form-offline #offline-submit-button {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+/* <= 400px: result-card grid collapses to one column. The grid is the
+   <div> whose direct children are result cards — matched structurally so
+   no other grid is affected. */
+@media (max-width: 400px) {
+  main div:has(> [data-testid^='result-card-']) {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+/* <= 390px: main gutters tighten (the popup is fixed 400px wide and does
+   not shrink — see docs/RESPONSIVE.md). */
+@media (max-width: 390px) {
+  .ed-page .ed-main-inner {
+    padding-inline: 12px;
+  }
+}
+
+/* <= 360px: hero + page + settings titles step down again (web
+   ultra-compact); header compresses. */
+@media (max-width: 360px) {
+  h1[class*='text-[32px]'] {
+    font-size: 26px;
+  }
+  main h1[class*='text-[2.5rem]'] {
+    font-size: 1.625rem;
+  }
+  #resize-form-offline .title {
+    font-size: 1.375rem;
+  }
+}
+
+/* <= 320px: smallest supported width — hero at its floor, main gutters
+   at their floor. Nothing here introduces a fixed width: everything is
+   relative, so nothing can overflow the 320px viewport. */
+@media (max-width: 320px) {
+  h1[class*='text-[32px]'] {
+    font-size: 24px;
+  }
+  .ed-page .ed-main-inner {
+    padding-inline: 8px;
+  }
+}

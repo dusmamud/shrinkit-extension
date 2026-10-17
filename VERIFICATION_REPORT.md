@@ -262,3 +262,133 @@ conflicts and re-ran every gate. No worker files were silently overwritten.
 - ES/PT tool strings still need native-speaker review before Store submission.
 
 **Not done (per task):** GitHub push — parent pushes after verification. Chrome Web Store listing — not submitted.
+
+---
+
+## Multi-page rebuild — docs + verification prep (Worker 10: docs only)
+
+> Scope: this worker owned docs only — `docs/ROUTING.md` (new),
+> `README.md`, `ARCHITECTURE.md`, and this section. It edited no code
+> and ran no gates; gate results are the coordinator's final run, not
+> this section's. Nothing below claims the multi-page code is built,
+> rendered, or verified. The route table documents the rebuild spec,
+> reconciled mid-task against the page + layout files the code workers
+> had landed (`src/pages/*Page.tsx`, `src/components/home/`,
+> `src/components/layout/` — read, not edited). At the time of writing,
+> the Editor shell router wiring had NOT landed
+> (`entrypoints/editor/Editor.tsx` was still the tab-based version in
+> git status), so the "Status" column below means: page file present,
+> shell wiring still to be confirmed by the coordinator. The route
+> strings are the contract; file paths follow the landed layout.
+
+### What was written
+
+| File                    | Change                                                                                                                                                                                                                                                                                                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/ROUTING.md` (NEW) | Hash-routing scheme (`editor.html[?query]#/route`), why hash routing, query-before-hash rule, full route table, query-parameter table, who-opens-which-URL table, router behaviour, shared Header/Footer layout (+ `#/resize` minimal-footer exception), what is NOT hash-routed (popup / options / offscreen), how to add a new page.                        |
+| `README.md`             | Single-editor description replaced with the multi-page structure (Home / Tools hub / 5 tool pages / About / Contact / Privacy / Terms / 404 / Popup / Options), routes, project tree (`src/pages/`), laptop test step for every route.                                                                                                                        |
+| `ARCHITECTURE.md`       | Editor entrypoint row updated to multi-page; new "Multi-page app" section (router, layout, pages, invariant list: Tailwind wired, logo 32px, formats gate, right-click slugs, `default_locale` absent, tokens byte-identical, containers 960/940/1075/650, routing rules, no hardcoded strings); tools + message-protocol sections updated to the page model. |
+
+### Route table — route → web page mirrored → page file → status
+
+| Route                          | Web page mirrored                                 | Page file                            | Status                                                         |
+| ------------------------------ | ------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------- |
+| `#/`                           | `/` (Home: hero tool + HowItWorks + InfoSections) | `src/pages/HomePage.tsx`             | Page file landed — router shell wiring: coordinator to confirm |
+| `#/resize`                     | `/resize`                                         | `src/pages/ResizePage.tsx`           | Page file landed — router shell wiring: coordinator to confirm |
+| `#/tools`                      | `/tools` (Tools hub)                              | `src/pages/ToolsHubPage.tsx`         | Page file landed — router shell wiring: coordinator to confirm |
+| `#/tools/compress-to-50kb`     | `/tools/compress-to-50kb`                         | `src/pages/tools/Compress50Page.tsx` | Page file landed — router shell wiring: coordinator to confirm |
+| `#/tools/compress-to-20kb`     | `/tools/compress-to-20kb`                         | `src/pages/tools/Compress20Page.tsx` | Page file landed — router shell wiring: coordinator to confirm |
+| `#/tools/passport-photo-maker` | `/tools/passport-photo-maker`                     | `src/pages/tools/PassportPage.tsx`   | Page file landed — router shell wiring: coordinator to confirm |
+| `#/tools/social-media-resizer` | `/tools/social-media-resizer`                     | `src/pages/tools/SocialPage.tsx`     | Page file landed — router shell wiring: coordinator to confirm |
+| `#/tools/compare-images`       | `/tools/compare-images`                           | `src/pages/tools/ComparePage.tsx`    | Page file landed — router shell wiring: coordinator to confirm |
+| `#/about`                      | `/about`                                          | `src/pages/AboutPage.tsx`            | Page file landed — router shell wiring: coordinator to confirm |
+| `#/contact`                    | `/contact`                                        | `src/pages/ContactPage.tsx`          | Page file landed — router shell wiring: coordinator to confirm |
+| `#/privacy`                    | `/privacy`                                        | `src/pages/PrivacyPage.tsx`          | Page file landed — router shell wiring: coordinator to confirm |
+| `#/terms`                      | `/terms`                                          | `src/pages/TermsPage.tsx`            | Page file landed — router shell wiring: coordinator to confirm |
+| Any other hash                 | `/404`                                            | `src/pages/NotFoundPage.tsx`         | Page file landed — router shell wiring: coordinator to confirm |
+
+The 5 tool pages are the `/tools/*` rows. The main resizer lives on
+Home (`#/`) and `#/resize`, matching the web app. Popup (`popup.html`)
+and Options (`options.html`) are separate entrypoints, not routes.
+
+### Needs laptop — NOT claimed here (only real Chrome can prove)
+
+- [ ] Every route renders: `#/`, `#/resize`, `#/tools`, all 5 tool pages, `#/about`, `#/contact`, `#/privacy`, `#/terms`, plus an unknown hash showing the 404 page.
+- [ ] Every route at **390px + 1440px** (plus 320/360px if time allows): no horizontal overflow, header nav wraps/stacks cleanly, footer readable, tool UI usable.
+- [ ] Header/Footer nav: every link moves between pages without a reload; the current route is marked active; browser back/forward works through the route history.
+- [ ] Right-click landing: right-click a real image → editor opens on `#/` with the image preloaded in the hero tool; right-click failure → `#/` with the localised error banner, never blank, never silent.
+- [ ] Popup polish: popup opens `#/` (Full Editor) and `#/tools` correctly; popup itself still looks like the web app at 400px.
+- [ ] Deep links survive reload: reloading `editor.html#/tools/passport-photo-maker` (and each other route) renders that page, not Home or blank.
+- [ ] `#/resize` shows the minimal footer (copyright bar only); all other pages show the full footer.
+- [ ] Legacy `?tool=passport`-style links (no hash) still land on the matching tool page.
+
+### Open items for the coordinator (not resolved by this worker)
+
+- **Router shell wiring:** page + layout components landed, but the Editor shell (`Editor.tsx`) was still tab-based at the time of writing. Confirm the shell worker lands the hash router (parse hash on load + `hashchange`, default `#/`, unknown → 404, scroll/anchor handling, `document.title`, query-before-hash handoff) and that it renders `Header`/`Footer` from `src/components/layout/` around `src/pages/` components.
+- **i18n keys for new pages:** the catalogs carry `about.*`, `contact.*`, `privacy.*`, `info1.*` / `info2.*`, and `footer.*` keys (incl. `footer.about`, `footer.terms`, `footer.tools_all`), but **zero `terms.*` keys** and no `nav.about` / `nav.terms` keys. Check what copy source `TermsPage.tsx` actually uses — if it needs `terms.*` content keys, they must be added in all three catalogs (en / es / pt), not English-only.
+- **Logo size discrepancy:** the pre-rebuild parity invariant pinned the editor header logo at 32px; the landed Header uses the web's 34px (footer brand 30px, popup 32px). Decide whether 34px stands or 32px is restored, and update the invariant + tests to match the decision.
+- **`docs/README.md` index** does not yet list `docs/ROUTING.md` (that file was outside this worker's owned set) — add one row pointing at it.
+- **Gates:** `tsc` / `eslint` / `prettier` / `vitest` / `build` / `check:css` / `check:responsive` / `zip` are the coordinator's final run. This worker ran none of them.
+- **No push** per task (coordinator / parent pushes after verification).
+
+---
+
+## Multi-page rebuild — coordinator integration + final gates (2026-10-17)
+
+All 10 rebuild workers delivered. The coordinator integrated them, resolved
+every open item from the section above, and ran the full gates on the
+combined state. **Do NOT push** — parent pushes after verification.
+
+### Integration fixes (coordinator)
+
+| #   | Fix                                                                                                                                                                                                                                                                                                                                          | Files                                                                                                                                |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Tool-page broken imports: `../../../lib                                                                                                                                                                                                                                                                                                      | tools`→`../../lib                                                                                                                    | tools`(was the only`tsc` failure, 10 errors) | `src/pages/tools/*.tsx` |
+| 2   | Header active-route marking: Editor passes `currentRoute`; Header renders `aria-current="page"` + accent style on desktop + mobile nav                                                                                                                                                                                                       | `entrypoints/editor/Editor.tsx`, `src/components/layout/Header.tsx`                                                                  |
+| 3   | Skip-to-content link (a11y F3): first focusable element in Editor, targets `<main id="main-content">`; new `nav.skip_to_content` key (EN/ES/PT)                                                                                                                                                                                              | `entrypoints/editor/Editor.tsx`, `src/i18n/messages/*.json`                                                                          |
+| 4   | Header nav `aria-label`s localised (F5): `nav.primary` / `nav.mobile` keys added (EN/ES/PT)                                                                                                                                                                                                                                                  | `src/components/layout/Header.tsx`, `src/i18n/messages/*.json`                                                                       |
+| 5   | `ResizePage` is now STANDALONE (web parity), not a redirect: shared `Hero` + `MainResizer`. The old `resize.redirect_text` / `resize.back_home` keys were removed (all 3 locales) + removed from the i18n pinned list; router test updated to assert no hash-write redirect                                                                  | `src/pages/ResizePage.tsx`, `tests/unit/router.test.ts`, `tests/unit/i18n.test.ts`, `src/i18n/messages/*.json`                       |
+| 6   | Footer `variant="minimal"` (copyright bar only) for `#/resize`, matching the web page's 0-footer-links footer                                                                                                                                                                                                                                | `src/components/layout/Footer.tsx`, `entrypoints/editor/Editor.tsx`                                                                  |
+| 7   | Footer links reach the 24px WCAG target (F7): `inline-block py-0.5`                                                                                                                                                                                                                                                                          | `src/components/layout/Footer.tsx`                                                                                                   |
+| 8   | Mobile menu Escape returns focus to the hamburger (F8)                                                                                                                                                                                                                                                                                       | `src/components/layout/Header.tsx`                                                                                                   |
+| 9   | Tool components ported to `--t-*` tokens (F6): `slate-*` / `bg-white` / `[#007bff]` → `tink` / `tmuted` / `tline` / `tsurface` / `taccent` (109 occurrences, 4 files). Dark mode now applies to all tool UIs                                                                                                                                 | `src/tools/*/*.tsx`                                                                                                                  |
+| 10  | Tool dropzones: `aria-label` (F1) + Space `preventDefault()` (F2) on all 5; main `Dropzone.tsx` Space `preventDefault()` + `tabIndex={disabled ? -1 : 0}` (F10)                                                                                                                                                                              | `src/tools/*/*.tsx`, `src/components/Dropzone.tsx`                                                                                   |
+| 11  | Result images use the source file name as `alt` (F12); CompareTool uses new localised `tools.compare.originalAlt` / `compressedAlt` keys (no File state exists for the compressed side)                                                                                                                                                      | `src/tools/*/*.tsx`, `src/i18n/messages/*.json`                                                                                      |
+| 12  | Options `<nav>` gets `aria-label` (F9)                                                                                                                                                                                                                                                                                                       | `entrypoints/options/Options.tsx`                                                                                                    |
+| 13  | Dead header/tab CSS removed: `.ed-header*`, `.ed-brand*`, `.ed-logo`, `.ed-tabs`, `.ed-tab*`, `.ed-header-actions`, `.ed-settings-*` from `entrypoints/editor/style.css` + `src/styles/global.css` (nothing renders them since the header moved to `Header.tsx`)                                                                             | `entrypoints/editor/style.css`, `src/styles/global.css`                                                                              |
+| 14  | Guards repointed at the real header + logo invariant decided per-context (NOT forced to one size): editor header 34px (web parity), footer 30px, popup 32px. `check-tailwind.mjs` §4 + `check-responsive.mjs` + `css-guard` + `responsive-parity` tests now check `Header.tsx` (34px, 1075px) instead of the dead `Editor.tsx` inline header | `scripts/check-tailwind.mjs`, `scripts/check-responsive.mjs`, `tests/unit/css-guard.test.ts`, `tests/unit/responsive-parity.test.ts` |
+| 15  | `docs/README.md` index rows added for `docs/ROUTING.md` + `docs/RESPONSIVE.md`; `docs/RESPONSIVE.md` findings F1–F12 marked FIXED except F11 (OPEN) and F4 (MOOT — tabs removed)                                                                                                                                                             | `docs/README.md`, `docs/RESPONSIVE.md`                                                                                               |
+
+Decisions recorded: **logo sizes are per-context** (34 / 30 / 32) — the old
+"32px everywhere" invariant was wrong for the web-parity header; **route
+slugs are the web slugs** (`#/tools/compress-to-50kb`, …), not short slugs;
+**duplicate i18n key families** (e.g. `tools.hub.title` vs
+`tools.hub_title`) both exist and are populated — cleanup deferred, not a
+correctness issue. Remaining a11y gap: **F11** (SettingsPanel combobox
+lacks `aria-activedescendant`) — needs a screen-reader check.
+
+### Final gates — combined state (all green)
+
+| Gate                       | Result                                                    |
+| -------------------------- | --------------------------------------------------------- |
+| `npx tsc --noEmit`         | 0 errors                                                  |
+| `npx eslint .`             | 0 problems                                                |
+| `npx prettier --check .`   | clean                                                     |
+| `npx vitest run`           | **195/195** (was 157; +38: router 28, pages 6, i18n +4)   |
+| `npm run build`            | OK — 1.15 MB total                                        |
+| `npm run check:css`        | PASS — 84,149 bytes built CSS, Header logo 34px pin       |
+| `npm run check:responsive` | PASS — containers 1075/960/940/650, no 1100px             |
+| `npm run zip`              | OK — `.output/shrinkit-extension-1.0.0-chrome.zip` 403 KB |
+| Built manifest             | `default_locale` 0 occurrences                            |
+| Built CSS                  | 0 occurrences of `1100px`                                 |
+| i18n catalogs              | 566 keys each (en/es/pt), identical key sets              |
+
+### Still ONLY provable on the user's laptop (not claimed here)
+
+- Every route renders in real Chrome at 390px + 1440px (no overflow, header hamburger <768px, hero scales, grids collapse).
+- Right-click on real sites (https incl. CORS-strict, `data:`, `blob:`) lands on `#/` with the image preloaded; error paths show the localised banner.
+- Real BMP/AVIF uploads + SVG rejection; real downloads / ZIP; real-phone EXIF.
+- Reload deep-link (`editor.html#/tools/passport-photo-maker`) renders that page.
+- `#/resize` shows the copyright-only footer; all other pages show the full footer.
+- ES/PT strings: machine-translated from EN/web copy — native-speaker review still needed before Store submission.
+- Screen-reader pass for F11 (combobox `aria-activedescendant`).

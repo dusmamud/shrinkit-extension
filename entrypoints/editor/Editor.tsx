@@ -1,74 +1,50 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+/**
+ * Editor — app shell for the multi-page editor (`editor.html`).
+ *
+ * Hash routing: the route comes from `window.location.hash`
+ * (`editor.html#/tools`), the handoff parameters from
+ * `window.location.search` (`editor.html?src=rightclick&key=…#/` — query
+ * BEFORE hash; anything after the first `#` is fragment, never query).
+ * The shell renders the shared Header + current page + Footer. Only the
+ * main content area changes between routes.
+ *
+ * - `src`/`key`/`reason` are read ONCE on the initial load. Navigating
+ *   to another hash route afterwards does not re-read them.
+ * - Right-click (`?src=rightclick&key=…`) and error (`?src=error&reason=…`)
+ *   landings are Home (`#/`). The preloaded image / error message are
+ *   passed to HomePage, which owns their display; the shell never
+ *   renders a second banner.
+ * - Legacy `?tool=` (previous single-page editor) maps to its hash route
+ *   only when the URL carries no hash at all. New code never generates
+ *   `?tool=` links.
+ * - Theme follows settings (`system` tracks the OS); locale/theme are
+ *   persisted via the settings store. Document title is localised per
+ *   route. While settings load, a localised loading state is shown —
+ *   never a blank page.
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { t } from '../../src/lib/i18n/index';
 import type { Locale } from '../../src/lib/i18n/index';
 import { getSettings, saveSettings, type Theme } from '../../src/lib/settings/index';
-import { LanguageSwitcher } from '../../src/components/LanguageSwitcher';
-import { ThemeSwitcher } from '../../src/components/ThemeSwitcher';
-import MainResizer from '../../src/components/MainResizer';
-import TargetSizeTool from '../../src/tools/target-size/TargetSizeTool';
-import PassportTool from '../../src/tools/passport/PassportTool';
-import SocialTool from '../../src/tools/social/SocialTool';
-import CompareTool from '../../src/tools/compare/CompareTool';
-
-export type EditorTab = 'main' | 'target50' | 'target20' | 'passport' | 'social' | 'compare';
-
-const TABS: EditorTab[] = ['main', 'target50', 'target20', 'passport', 'social', 'compare'];
-
-// CANONICAL tool slugs — the background worker aligns ?tool= / right-click
-// routing to these exact values. Do not rename without updating it too.
-const TOOL_PARAM_TO_TAB: Record<string, EditorTab> = {
-  main: 'main',
-  target50: 'target50',
-  target20: 'target20',
-  passport: 'passport',
-  social: 'social',
-  compare: 'compare',
-};
-
-function tabLabel(locale: Locale, tab: EditorTab): string {
-  switch (tab) {
-    case 'main':
-      return t(locale, 'nav.resize');
-    case 'target50':
-      return t(locale, 'footer.tools_50kb');
-    case 'target20':
-      return t(locale, 'footer.tools_20kb');
-    case 'passport':
-      return t(locale, 'footer.tools_passport');
-    case 'social':
-      return t(locale, 'footer.tools_social');
-    case 'compare':
-      return t(locale, 'footer.tools_compare');
-  }
-}
-
-function GearIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="2" />
-      <path
-        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CloseIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M6 6l12 12M18 6 6 18"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+import { buildHash, parseHash } from '../../src/router/hash';
+import { legacyToolToRoute, ROUTE_TITLE_KEY, type Route } from '../../src/router/routes';
+import Header from '../../src/components/layout/Header';
+import Footer from '../../src/components/layout/Footer';
+import HomePage from '../../src/pages/HomePage';
+import ToolsHubPage from '../../src/pages/ToolsHubPage';
+import Compress50Page from '../../src/pages/tools/Compress50Page';
+import Compress20Page from '../../src/pages/tools/Compress20Page';
+import PassportPage from '../../src/pages/tools/PassportPage';
+import SocialPage from '../../src/pages/tools/SocialPage';
+import ComparePage from '../../src/pages/tools/ComparePage';
+import AboutPage from '../../src/pages/AboutPage';
+import ContactPage from '../../src/pages/ContactPage';
+import PrivacyPage from '../../src/pages/PrivacyPage';
+import TermsPage from '../../src/pages/TermsPage';
+import NotFoundPage from '../../src/pages/NotFoundPage';
+import ResizePage from '../../src/pages/ResizePage';
 
 function resolveTheme(theme: Theme): 'light' | 'dark' {
   if (theme !== 'system') return theme;
@@ -89,23 +65,17 @@ async function dataUrlToFile(name: string, dataUrl: string): Promise<File> {
   return new File([blob], name, { type: blob.type || 'image/png' });
 }
 
-// Logo size is enforced THREE ways so it can never explode to the SVG's
-// natural 1024px, even if Tailwind fails to load:
-//  1. width/height attributes (32) — the browser sizes the <img> before CSS.
-//  2. Inline style maxWidth/maxHeight (32) — survives any stylesheet failure.
-//  3. .ed-logo in style.css — plain-CSS fallback alongside Tailwind classes.
-const LOGO_SIZE = 32;
-
 export default function Editor() {
   const [locale, setLocale] = useState<Locale>('en');
   const [theme, setTheme] = useState<Theme>('system');
-  const [activeTab, setActiveTab] = useState<EditorTab>('main');
+  const [route, setRoute] = useState<Route>('/');
+  const [anchor, setAnchor] = useState<string | null>(null);
   const [preloadedFiles, setPreloadedFiles] = useState<File[] | null>(null);
   const [preloadError, setPreloadError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const initRef = useRef(false);
 
-  // Initial load: persisted settings + URL params (?tool=…&src=rightclick&key=…).
+  // Initial load: persisted settings + URL params (?src=…&key=…&tool=…).
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
@@ -122,11 +92,27 @@ export default function Editor() {
       setLocale(activeLocale);
       setTheme(activeTheme);
 
+      // Route: the hash wins. A legacy ?tool= applies only when the URL
+      // carries no hash at all; the URL is then canonicalised to the
+      // hash form so a refresh or bookmark keeps the route.
       const params = new URLSearchParams(window.location.search);
-      const toolParam = params.get('tool');
-      if (toolParam && TOOL_PARAM_TO_TAB[toolParam]) {
-        setActiveTab(TOOL_PARAM_TO_TAB[toolParam]);
+      const parsed = parseHash(window.location.hash);
+      let initialRoute = parsed.route;
+      let initialAnchor: string | null = parsed.params.anchor ?? null;
+      if (!window.location.hash) {
+        const legacy = legacyToolToRoute(params.get('tool'));
+        if (legacy) {
+          initialRoute = legacy;
+          initialAnchor = null;
+          window.history.replaceState(
+            null,
+            '',
+            `${window.location.pathname}${window.location.search}${buildHash(legacy)}`,
+          );
+        }
       }
+      setRoute(initialRoute);
+      setAnchor(initialAnchor);
 
       if (params.get('src') === 'error') {
         const reason = params.get('reason');
@@ -150,6 +136,14 @@ export default function Editor() {
           if (!dataUrl) throw new Error('missing-payload');
           const file = await dataUrlToFile(name, dataUrl);
           setPreloadedFiles([file]);
+          // One-shot handoff: the key is consumed once, then cleared so a
+          // reload cannot resurrect a stale image. Best-effort — the
+          // file is already in memory if the removal fails.
+          try {
+            await chrome.storage.session.remove(key);
+          } catch {
+            // Removal failing must not lose the preloaded image.
+          }
         } catch {
           setPreloadError(t(activeLocale, 'ext.right_click_failed'));
         }
@@ -157,6 +151,34 @@ export default function Editor() {
       setReady(true);
     })();
   }, []);
+
+  // Follow hash navigation (links, back/forward). Query params are NOT
+  // re-read here — the handoff is initial-load only.
+  useEffect(() => {
+    const onHashChange = () => {
+      const parsed = parseHash(window.location.hash);
+      setRoute(parsed.route);
+      setAnchor(parsed.params.anchor ?? null);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  // Scroll on navigation: to the anchor element when the hash carries
+  // one (`#/#how-it-works`), otherwise back to the top so a deep page
+  // never leaves the next page mid-scroll.
+  useEffect(() => {
+    if (!ready) return undefined;
+    if (!anchor) {
+      window.scrollTo({ top: 0 });
+      return undefined;
+    }
+    const id = anchor;
+    const timer = window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [ready, route, anchor]);
 
   // Apply the theme to <html> so style.css tokens flip; follow the OS in system mode.
   useEffect(() => {
@@ -172,10 +194,10 @@ export default function Editor() {
     return undefined;
   }, [theme]);
 
-  // Keep the tab title localized.
+  // Keep the tab title localised per route.
   useEffect(() => {
-    document.title = `${t(locale, 'site.name')} — ${t(locale, 'site.tagline')}`;
-  }, [locale]);
+    document.title = `${t(locale, 'site.name')} — ${t(locale, ROUTE_TITLE_KEY[route])}`;
+  }, [locale, route]);
 
   const handleLocaleChange = useCallback((next: Locale) => {
     setLocale(next);
@@ -187,136 +209,25 @@ export default function Editor() {
     void saveSettings({ theme: next });
   }, []);
 
-  const handleOpenOptions = useCallback(() => {
-    if (typeof chrome !== 'undefined' && chrome.runtime?.openOptionsPage) {
-      chrome.runtime.openOptionsPage();
-    } else if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
-      window.open(chrome.runtime.getURL('options.html'), '_blank', 'noopener');
-    }
-  }, []);
-
-  const logoSrc =
-    typeof chrome !== 'undefined' && chrome.runtime?.getURL
-      ? chrome.runtime.getURL('icons/logo.svg')
-      : 'icons/logo.svg';
-
   return (
     <div className="ed-page min-h-screen bg-[var(--ed-surface)] text-[var(--ed-ink)]">
-      <header className="ed-header sticky top-0 z-40 bg-[var(--t-page,var(--ed-surface))]">
-        <div className="ed-header-inner mx-auto flex w-full max-w-[1075px] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-4">
-          <a
-            href="editor.html"
-            className="ed-brand flex items-center gap-2.5"
-            aria-label={t(locale, 'site.name')}
-          >
-            <img
-              src={logoSrc}
-              alt=""
-              aria-hidden="true"
-              width={LOGO_SIZE}
-              height={LOGO_SIZE}
-              style={{
-                width: LOGO_SIZE,
-                height: LOGO_SIZE,
-                maxWidth: LOGO_SIZE,
-                maxHeight: LOGO_SIZE,
-                display: 'block',
-                flexShrink: 0,
-              }}
-              className="ed-logo h-8 w-8"
-            />
-            <span className="ed-brand-name text-[1.35rem] font-medium tracking-tight text-[var(--t-ink,var(--ed-ink))]">
-              {t(locale, 'site.name')}
-            </span>
-          </a>
+      {/* Skip link: keyboard users jump straight past the header/nav. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-taccent focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
+      >
+        {t(locale, 'nav.skip_to_content')}
+      </a>
+      <Header
+        locale={locale}
+        theme={theme}
+        onLocaleChange={handleLocaleChange}
+        onThemeChange={handleThemeChange}
+        currentRoute={route}
+      />
 
-          <nav
-            aria-label={t(locale, 'nav.tools')}
-            className="ed-tabs order-3 flex w-full flex-wrap items-center sm:order-2 sm:w-auto sm:flex-1 sm:justify-center"
-          >
-            {TABS.map((tab, i) => {
-              const selected = activeTab === tab;
-              return (
-                <Fragment key={tab}>
-                  {i > 0 && (
-                    <span
-                      aria-hidden="true"
-                      className="ed-tab-sep mx-2.5 h-4 w-px bg-[var(--t-divider,var(--ed-line))] xl:mx-4"
-                    />
-                  )}
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    onClick={() => setActiveTab(tab)}
-                    className={`ed-tab px-1 py-2.5 text-[13px] font-normal tracking-[0.8px] transition xl:text-[14px] xl:tracking-[1.17px] ${
-                      selected
-                        ? 'ed-tab-active text-[var(--t-accent,var(--ed-accent))]'
-                        : 'text-[var(--t-ink,var(--ed-ink))] hover:text-[var(--t-accent,var(--ed-accent))]'
-                    }`}
-                  >
-                    {tabLabel(locale, tab)}
-                  </button>
-                </Fragment>
-              );
-            })}
-          </nav>
-
-          <div className="ed-header-actions order-2 ml-auto flex items-center gap-1.5 sm:order-3 sm:ml-0 xl:gap-2">
-            <LanguageSwitcher locale={locale} onChange={handleLocaleChange} />
-            <ThemeSwitcher locale={locale} theme={theme} onChange={handleThemeChange} />
-            <button
-              type="button"
-              onClick={handleOpenOptions}
-              title={t(locale, 'ext.open_settings')}
-              aria-label={t(locale, 'ext.open_settings')}
-              className="ed-settings-btn inline-flex items-center gap-1.5 rounded-[6px] border border-[var(--t-divider,var(--ed-input-line))] px-2.5 py-2 text-sm font-medium text-[var(--t-ink-2,var(--ed-ink-2))] transition hover:border-[var(--t-accent,var(--ed-accent))] hover:text-[var(--t-accent,var(--ed-accent))]"
-            >
-              <GearIcon size={16} />
-              <span className="ed-settings-label hidden md:inline">
-                {t(locale, 'ext.open_settings')}
-              </span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="ed-main py-6 sm:py-8">
+      <main id="main-content" className="ed-main py-6 sm:py-8">
         <div className="ed-main-inner mx-auto w-full max-w-[960px] px-4">
-          {preloadError && (
-            <div
-              role="alert"
-              className="ed-banner-error mb-6 flex w-full items-start gap-3 rounded-[6px] bg-[var(--ed-error-soft)] px-4 py-3 text-sm text-[var(--ed-error)]"
-            >
-              <span className="flex-1">{preloadError}</span>
-              <button
-                type="button"
-                onClick={() => setPreloadError(null)}
-                aria-label={t(locale, 'errors.dismiss')}
-                className="ed-banner-dismiss transition hover:opacity-70"
-              >
-                <CloseIcon size={16} />
-              </button>
-            </div>
-          )}
-
-          {preloadedFiles && preloadedFiles.length > 0 && activeTab !== 'main' && (
-            <div className="ed-banner-info mb-6 flex w-full flex-wrap items-center gap-3 rounded-[6px] border border-[var(--ed-pill-line)] bg-[var(--ed-pill-bg)] px-4 py-3 text-sm text-[var(--ed-pill-text)]">
-              <span className="flex-1">
-                {t(locale, 'ext.right_click_title')} — {preloadedFiles[0]?.name}
-              </span>
-              <button
-                type="button"
-                onClick={() => setActiveTab('main')}
-                className="ed-banner-btn rounded-[6px] bg-[var(--ed-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--ed-accent-hover)]"
-              >
-                {/* No dedicated go-to-main key exists in the message catalogs;
-                    nav.resize is the localised label for the Main tool. */}
-                {t(locale, 'nav.resize')}
-              </button>
-            </div>
-          )}
-
           {/* Never a blank page: while settings/params load, show a
               localised loading state instead of an empty main area. */}
           {!ready && (
@@ -325,21 +236,31 @@ export default function Editor() {
             </div>
           )}
 
-          {ready && activeTab === 'main' && (
-            <MainResizer
+          {ready && route === '/' && (
+            <HomePage
               locale={locale}
               initialFiles={preloadedFiles}
               onInitialFilesConsumed={() => setPreloadedFiles(null)}
+              preloadError={preloadError}
             />
           )}
-
-          {ready && activeTab === 'target50' && <TargetSizeTool targetKb={50} locale={locale} />}
-          {ready && activeTab === 'target20' && <TargetSizeTool targetKb={20} locale={locale} />}
-          {ready && activeTab === 'passport' && <PassportTool locale={locale} />}
-          {ready && activeTab === 'social' && <SocialTool locale={locale} />}
-          {ready && activeTab === 'compare' && <CompareTool locale={locale} />}
+          {ready && route === '/tools' && <ToolsHubPage locale={locale} />}
+          {ready && route === '/tools/compress-to-50kb' && <Compress50Page locale={locale} />}
+          {ready && route === '/tools/compress-to-20kb' && <Compress20Page locale={locale} />}
+          {ready && route === '/tools/passport-photo-maker' && <PassportPage locale={locale} />}
+          {ready && route === '/tools/social-media-resizer' && <SocialPage locale={locale} />}
+          {ready && route === '/tools/compare-images' && <ComparePage locale={locale} />}
+          {ready && route === '/about' && <AboutPage locale={locale} />}
+          {ready && route === '/contact' && <ContactPage locale={locale} />}
+          {ready && route === '/privacy' && <PrivacyPage locale={locale} />}
+          {ready && route === '/terms' && <TermsPage locale={locale} />}
+          {ready && route === '/resize' && <ResizePage locale={locale} />}
+          {ready && route === '*' && <NotFoundPage locale={locale} />}
         </div>
       </main>
+
+      {/* /resize mirrors the web page: copyright bar only, no footer links. */}
+      <Footer locale={locale} variant={route === '/resize' ? 'minimal' : 'full'} />
     </div>
   );
 }

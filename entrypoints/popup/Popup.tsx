@@ -617,13 +617,19 @@ export default function Popup(): React.JSX.Element {
     }
   };
 
-  const openEditor = async (): Promise<void> => {
-    const url = chrome.runtime.getURL('editor.html');
+  const openEditorRoute = async (hash: string): Promise<void> => {
+    const url = `${chrome.runtime.getURL('editor.html')}${hash}`;
     try {
       await chrome.tabs.create({ url });
     } catch {
       window.open(url, '_blank');
     }
+  };
+  const openEditor = async (): Promise<void> => {
+    await openEditorRoute('#/');
+  };
+  const openTools = async (): Promise<void> => {
+    await openEditorRoute('#/tools');
   };
   const openSettings = async (): Promise<void> => {
     try {
@@ -661,11 +667,17 @@ export default function Popup(): React.JSX.Element {
     }
   };
 
+  // Same brand logo as the Editor header (icons/logo.svg), pinned to 32px.
+  const logoSrc =
+    typeof chrome !== 'undefined' && chrome.runtime?.getURL
+      ? chrome.runtime.getURL('icons/logo.svg')
+      : 'icons/logo.svg';
+
   return (
     <div className="popup-root">
       <header className="popup-header">
         <img
-          src="/icons/icon-48.png"
+          src={logoSrc}
           alt={t(locale, 'popup.logo_alt')}
           width={32}
           height={32}
@@ -777,9 +789,7 @@ export default function Popup(): React.JSX.Element {
           }}
         />
       </div>
-      <p className="popup-formats">
-        JPG · JPEG · PNG · GIF · WebP · BMP · AVIF → JPG · PNG · WebP · GIF
-      </p>
+      <p className="popup-formats">{t(locale, 'popup.formats_hint')}</p>
 
       {files.length > 0 && (
         <p className="popup-count">
@@ -985,35 +995,31 @@ export default function Popup(): React.JSX.Element {
               </span>
             </label>
           )}
-          {(format === 'jpeg' || format === 'gif') && (
-            <div
-              className="popup-bg-group"
-              role="radiogroup"
-              aria-label={t(locale, 'settings.background')}
-            >
-              <span>{t(locale, 'settings.background')}</span>
-              <div className="popup-bg-swatches">
-                {(['white', 'black'] as const).map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    role="radio"
-                    aria-checked={background === c}
-                    aria-label={t(
-                      locale,
-                      c === 'white' ? 'settings.bg_white' : 'settings.bg_black',
-                    )}
-                    title={t(locale, c === 'white' ? 'settings.bg_white' : 'settings.bg_black')}
-                    className={`popup-bg-btn ${c}${background === c ? ' selected' : ''}`}
-                    onClick={() => {
-                      setBackground(c);
-                      setActivePreset(null);
-                    }}
-                  />
-                ))}
-              </div>
+          {/* Background — always shown, like the web SettingsPanel. */}
+          <div
+            className="popup-bg-group"
+            role="radiogroup"
+            aria-label={t(locale, 'settings.background')}
+          >
+            <span>{t(locale, 'settings.background')}</span>
+            <div className="popup-bg-swatches">
+              {(['white', 'black'] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  role="radio"
+                  aria-checked={background === c}
+                  aria-label={t(locale, c === 'white' ? 'settings.bg_white' : 'settings.bg_black')}
+                  title={t(locale, c === 'white' ? 'settings.bg_white' : 'settings.bg_black')}
+                  className={`popup-bg-btn ${c}${background === c ? ' selected' : ''}`}
+                  onClick={() => {
+                    setBackground(c);
+                    setActivePreset(null);
+                  }}
+                />
+              ))}
             </div>
-          )}
+          </div>
         </div>
       </section>
 
@@ -1076,6 +1082,9 @@ export default function Popup(): React.JSX.Element {
       <div className="popup-footer">
         <button type="button" className="popup-secondary" onClick={() => void openEditor()}>
           {t(locale, 'popup.open_editor')}
+        </button>
+        <button type="button" className="popup-secondary" onClick={() => void openTools()}>
+          {t(locale, 'popup.open_tools')}
         </button>
         <button type="button" className="popup-secondary" onClick={() => void openSettings()}>
           {t(locale, 'popup.settings')}

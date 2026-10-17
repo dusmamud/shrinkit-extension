@@ -127,6 +127,19 @@ function pinsTo32(expr: string | undefined, source: string): boolean {
   return new RegExp(`const\\s+${name}\\s*=\\s*32\\b`).test(source);
 }
 
+/**
+ * True when a JSX size expression pins to 34px: either the literal `34`
+ * or a named constant defined as 34 in the same file.
+ */
+function pinsTo34(expr: string | undefined, source: string): boolean {
+  if (expr === undefined) return false;
+  const trimmed = expr.trim();
+  if (trimmed === '34') return true;
+  const name = trimmed.match(/^([A-Za-z_$][\w$]*)$/)?.[1];
+  if (!name) return false;
+  return new RegExp(`const\\s+${name}\\s*=\\s*34\\b`).test(source);
+}
+
 function jsxAttr(tag: string, name: string): string | undefined {
   return tag.match(new RegExp(`${name}=\\{([^}]+)\\}`))?.[1];
 }
@@ -304,14 +317,10 @@ const ED_ALIASES: Record<string, string> = {
 };
 
 describe('Container parity (web values)', () => {
-  it('editor header inner is 1075px (web Header.astro) in Editor.tsx + editor/style.css', () => {
-    const editor = readSource('entrypoints/editor/Editor.tsx');
-    const headerClass = classNames(editor).find((c) => c.includes('ed-header-inner'));
-    expect(headerClass, 'ed-header-inner className in Editor.tsx').toBeDefined();
-    expect(headerClass).toContain('max-w-[1075px]');
-    const css = readSource('entrypoints/editor/style.css');
-    const block = extractBlock(css, /\.ed-header-inner\s*\{/);
-    expect(block).toContain('max-width: 1075px');
+  it('editor header inner is 1075px (web Header.astro) in Header.tsx', () => {
+    // The header lives in Header.tsx (Editor.tsx renders <Header/>).
+    const header = readSource('src/components/layout/Header.tsx');
+    expect(header).toContain('max-w-[1075px]');
   });
 
   it('editor main inner is 960px (web ShrinkItApp.tsx) in Editor.tsx + editor/style.css', () => {
@@ -516,19 +525,16 @@ describe('Breakpoints + overflow safeguards', () => {
 });
 
 describe('Logo pinning', () => {
-  it('editor header logo <img> pins to 32px (attrs + inline style + .ed-logo CSS)', () => {
-    const editor = readSource('entrypoints/editor/Editor.tsx');
-    const logoImg = imgTags(editor).find((tag) => tag.includes('logoSrc'));
-    expect(logoImg, 'expected an <img> rendering logoSrc in Editor.tsx').toBeDefined();
-    expect(pinsTo32(jsxAttr(logoImg!, 'width'), editor)).toBe(true);
-    expect(pinsTo32(jsxAttr(logoImg!, 'height'), editor)).toBe(true);
-    expect(pinsTo32(styleProp(logoImg!, 'maxWidth'), editor)).toBe(true);
-    expect(pinsTo32(styleProp(logoImg!, 'maxHeight'), editor)).toBe(true);
-    const css = readSource('entrypoints/editor/style.css');
-    const logo = extractBlock(css, /\.ed-logo\s*\{/);
-    for (const rule of ['width: 32px', 'height: 32px', 'max-width: 32px', 'max-height: 32px']) {
-      expect(logo).toContain(rule);
-    }
+  it('editor header logo <img> pins to 34px (attrs + inline style, Header.tsx, web parity)', () => {
+    const header = readSource('src/components/layout/Header.tsx');
+    const logoImg = imgTags(header).find((tag) => tag.includes('resolveIconUrl()'));
+    expect(logoImg, 'expected an <img> rendering resolveIconUrl() in Header.tsx').toBeDefined();
+    expect(pinsTo34(jsxAttr(logoImg!, 'width'), header)).toBe(true);
+    expect(pinsTo34(jsxAttr(logoImg!, 'height'), header)).toBe(true);
+    expect(pinsTo34(styleProp(logoImg!, 'width'), header)).toBe(true);
+    expect(pinsTo34(styleProp(logoImg!, 'height'), header)).toBe(true);
+    expect(pinsTo34(styleProp(logoImg!, 'maxWidth'), header)).toBe(true);
+    expect(pinsTo34(styleProp(logoImg!, 'maxHeight'), header)).toBe(true);
   });
 
   it('popup header logo <img> pins to 32px (attrs + inline style + .popup-header img CSS)', () => {

@@ -7,14 +7,15 @@ ShrinkIt is a Chrome extension (Manifest V3, built with WXT + React + TypeScript
 ## What it does
 
 - **Popup quick resize** — Resize 1–5 images fast from the toolbar popup: pick a preset, click Resize + Download, done. A Full Editor button opens the complete editor.
-- **Full Editor (new tab)** — All 6 tools in one place:
-  1. Main resizer — resize by dimensions, percentage, or target file size
-  2. Compress to 50 KB — hit a 50 KB target
-  3. Compress to 20 KB — hit a 20 KB target
-  4. Passport Photo Maker — passport-size photos
-  5. Social Media Resizer — sizes for common social formats
-  6. Compare Images — compare original vs. resized side by side
-- **Batch** — up to 50 images at a time in the Full Editor.
+- **Full Editor (new tab) — a multi-page app** — `editor.html` is not a single page with tabs. It is a multi-page app with hash routing (`editor.html#/route`, see [docs/ROUTING.md](docs/ROUTING.md)) that mirrors the ShrinkIt web app's pages:
+  - **Home** (`#/`): Hero + main resizer + HowItWorks + InfoSections + tools grid.
+  - **Resize** (`#/resize`): the main resizer as a standalone page.
+  - **Tools hub** (`#/tools`): links to all five tool pages.
+  - **5 tool pages** (`#/tools/compress-to-50kb`, `#/tools/compress-to-20kb`, `#/tools/passport-photo-maker`, `#/tools/social-media-resizer`, `#/tools/compare-images`): one full tool per page — Compress to 50 KB, Compress to 20 KB, Passport Photo Maker, Social Media Resizer, Compare Images.
+  - **About** (`#/about`), **Contact** (`#/contact`), **Privacy** (`#/privacy`), **Terms** (`#/terms`), and a **404** page for unknown routes.
+  - Every editor page shares the same Header (logo + nav + language + theme) and Footer, ported from the web app.
+- **Batch** — up to 50 images at a time in the main resizer.
+- **Right-click** — Right-click any image on any page and choose **Resize with ShrinkIt** to send it straight to the editor Home page (`editor.html?src=rightclick&key=<key>#/`).
 - **Right-click** — Right-click any image on any page and choose **Resize with ShrinkIt** to send it straight to the editor.
 - **Languages** — English, Spanish, and Portuguese (en / es / pt).
 - **Settings sync** — Your settings (language, theme, defaults) sync across your Chrome browsers via `chrome.storage.sync`. Images are never synced or stored.
@@ -59,12 +60,16 @@ npm run zip     # produces a distributable .zip for the Chrome Web Store
 shrinkit-extension/
 ├── entrypoints/
 │   ├── popup/        # Toolbar popup — quick resize (1–5 images)
-│   ├── editor/       # Full Editor page — all 6 tools, batch up to 50
+│   ├── editor/       # Full Editor page — multi-page app (hash routing;
+│   │                 # pages live in src/pages/, see docs/ROUTING.md)
 │   ├── background/   # Service worker — context menu, right-click routing
 │   ├── options/      # Options page — settings
 │   ├── offscreen/    # Offscreen document — fetches right-clicked images
 │   └── content/      # Content script — page-side support for right-click flow
 ├── src/
+│   ├── pages/        # Editor pages: Home, Resize, Tools hub, 5 tool
+│   │                 # pages, About, Contact, Privacy, Terms, 404
+│   ├── components/   # Shared React components (incl. home/ + layout/)
 │   ├── lib/          # Image engine, i18n, settings
 │   ├── tools/        # The 6 tool definitions (shared by popup + editor)
 │   ├── components/   # Shared React components
@@ -74,7 +79,7 @@ shrinkit-extension/
 │   └── icons/        # Extension icons (copied from the ShrinkIt web app)
 ├── tests/
 │   └── unit/         # Vitest unit tests
-├── docs/             # PERMISSIONS.md, PRIVACY.md, docs index
+├── docs/             # PERMISSIONS.md, PRIVACY.md, ROUTING.md, docs index
 ├── wxt.config.ts     # WXT config + manifest (permissions, icons)
 ├── package.json
 ├── README.md
@@ -108,9 +113,10 @@ Full statement: [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Docs
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) — entrypoints, image engine, message protocol, data flow.
+- [ARCHITECTURE.md](ARCHITECTURE.md) — entrypoints, router + pages, image engine, message protocol, data flow.
 - [CONTRIBUTING.md](CONTRIBUTING.md) — setup, scripts, code style, PR checklist.
 - [docs/README.md](docs/README.md) — index of the `docs/` folder.
+- [docs/ROUTING.md](docs/ROUTING.md) — hash-routing scheme, full route table, who opens which URL, how to add a page.
 - [docs/PERMISSIONS.md](docs/PERMISSIONS.md) — permission-by-permission justification.
 - [docs/PRIVACY.md](docs/PRIVACY.md) — privacy policy.
 
@@ -149,6 +155,7 @@ Then load the built extension in Chrome:
 4. Select the `.output/chrome-mv3` folder inside this project.
 5. Open the popup from the toolbar, and open the Full Editor (popup → "Open Full Editor", or right-click an image → **Resize with ShrinkIt**).
 6. Check: popup looks like the ShrinkIt web app (not basic/broken), editor header logo is small (not full-screen), all 6 tools render, and a real BMP / AVIF file uploads.
+7. Check every editor route renders (type each hash into the editor tab's address bar): `#/`, `#/resize`, `#/tools`, `#/tools/compress-to-50kb`, `#/tools/compress-to-20kb`, `#/tools/passport-photo-maker`, `#/tools/social-media-resizer`, `#/tools/compare-images`, `#/about`, `#/contact`, `#/privacy`, `#/terms`, plus an unknown hash (e.g. `#/nope`) showing the 404 page. Header/Footer nav links must move between pages without a reload, and the browser back button must work.
 
 > If popup/editor looks broken, run `npm run check:css`. That guard checks the built CSS actually contains Tailwind utilities. If it fails, the Tailwind wiring is broken again — do not judge the UI until `check:css` passes and you have rebuilt. (Built CSS proof: `npm run check:css` PASS — 53,676 bytes, 3/3 Tailwind markers, logo pinned.)
 
