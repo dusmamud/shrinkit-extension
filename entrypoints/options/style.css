@@ -1,16 +1,395 @@
-/* Options page extras. Layout/spacing live in Tailwind classes; this file
-   only sets native-control accents so radios, checkboxes and range inputs
-   match the ShrinkIt blue in every browser. */
+/* Options page — theme tokens + plain-CSS mirrors of the Tailwind classes
+   in Options.tsx. The token NAMES are the shared --ed-* names (the
+   Language/Theme switchers are shared with the Editor, which defines
+   --ed-* in its own stylesheet), but the VALUES are the web app's --t-*
+   values (accent #016df0, ink #000, ink-2 #1d2939, muted #667085,
+   surface-2 #f6faff; dark = Dark 2 Graphite). So this page renders in the
+   web design language while the shared components keep working on both
+   pages. Layout/spacing for the shell lives here as a fallback so the page
+   stays compact and professional even if Tailwind fails to load. */
+
+:root {
+  --ed-surface: #ffffff;
+  --ed-surface-2: #f6faff;
+  --ed-ink: #000000;
+  --ed-ink-2: #1d2939;
+  --ed-muted: #667085;
+  --ed-line: #e2e8f0;
+  --ed-input-bg: #ffffff;
+  --ed-input-line: #cbd5e1;
+  --ed-accent: #016df0;
+  --ed-accent-hover: #0257bf;
+  --ed-error: #d33;
+  --ed-error-soft: #fff5f5;
+  --ed-success: #0a7d4f;
+  --ed-success-bg: #e6f4ea;
+  --ed-pill-bg: #eef4ff;
+  --ed-pill-text: #016df0;
+  --ed-pill-line: #d0e1fd;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --ed-surface: #1c1c1e;
+  --ed-surface-2: #232326;
+  --ed-ink: #e5e5ea;
+  --ed-ink-2: #d1d1d6;
+  --ed-muted: #98989f;
+  --ed-line: rgba(255, 255, 255, 0.1);
+  --ed-input-bg: #2c2c2e;
+  --ed-input-line: rgba(255, 255, 255, 0.16);
+  --ed-accent: #0a84ff;
+  --ed-accent-hover: #0071e3;
+  --ed-error: #ff7a7a;
+  --ed-error-soft: #3a1d1d;
+  --ed-success: #34d399;
+  --ed-success-bg: #14351f;
+  --ed-pill-bg: #1e2f4a;
+  --ed-pill-text: #60a5fa;
+  --ed-pill-line: #2c4a73;
+}
+
+/* --- Page shell (mirrors the Tailwind classes in Options.tsx) -------- */
+
+.opt-page {
+  min-height: 100vh;
+  max-width: 100%;
+  overflow-x: clip;
+  background-color: var(--ed-surface);
+  color: var(--ed-ink-2);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.opt-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  border-bottom: 1px solid var(--ed-line);
+  background-color: var(--ed-surface);
+}
+
+.opt-header-inner {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 4px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+}
+
+.opt-main {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 960px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+/* Settings form column: 650px centered inside the 960px page. */
+.opt-col {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 650px;
+  padding: 24px 0 32px;
+  box-sizing: border-box;
+}
+
+.opt-card {
+  background-color: var(--ed-surface);
+  border: 1px solid var(--ed-line);
+  border-radius: 16px;
+  padding: 20px;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.opt-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--ed-ink);
+  line-height: 1.4;
+}
+
+/* --- Form controls (web SettingsPanel values) ------------------------ */
+
+.opt-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ed-ink);
+  line-height: 1.4;
+}
+
+.opt-input,
+.opt-select {
+  width: 100%;
+  height: 50px;
+  border-radius: 6px;
+  border: 1px solid var(--ed-input-line);
+  background-color: var(--ed-input-bg);
+  color: var(--ed-ink-2);
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.opt-input {
+  padding: 0 12px;
+}
+
+.opt-select {
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.opt-input:focus,
+.opt-select:focus {
+  border-color: var(--ed-accent);
+}
+
+/* Width / Height number inputs: SettingsPanel sizes. */
+.opt-num {
+  width: 68px;
+  height: 50px;
+  border-radius: 6px;
+  border: 1px solid var(--ed-input-line);
+  background-color: var(--ed-input-bg);
+  color: var(--ed-ink-2);
+  font-family: inherit;
+  font-size: 1.15em;
+  font-weight: 300;
+  text-align: center;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.opt-num:focus {
+  border-color: var(--ed-accent);
+}
+
+/* Hide number-input spinners to match the web app's clean look. */
+.opt-num::-webkit-inner-spin-button,
+.opt-num::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.opt-num {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Unit dropdown next to the size inputs: SettingsPanel widths. */
+.opt-unit-select {
+  width: 125px;
+  height: 50px;
+  border-radius: 6px;
+  border: 1px solid var(--ed-input-line);
+  background-color: var(--ed-input-bg);
+  color: var(--ed-ink-2);
+  font-family: inherit;
+  font-size: 1rem;
+  text-transform: capitalize;
+  text-align: center;
+  padding: 0 10px;
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.opt-unit-select:focus {
+  border-color: var(--ed-accent);
+}
+
+/* Appearance row: Theme + Language switchers sit side by side and wrap. */
+.opt-appearance-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  min-width: 0;
+}
+
+/* Radio / checkbox rows. */
+.opt-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--ed-ink-2);
+  line-height: 1.5;
+  cursor: pointer;
+  min-width: 0;
+}
+
+/* Background swatches: 35px circles, 3px accent ring when selected. */
+.opt-swatch {
+  display: inline-block;
+  width: 35px;
+  height: 35px;
+  border-radius: 999px;
+  flex: none;
+  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.opt-swatch-white {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+}
+
+.opt-swatch-black {
+  background-color: #000000;
+  border: 1px solid var(--ed-input-line);
+}
+
+.opt-swatch-selected {
+  border: 3px solid var(--ed-accent) !important;
+}
+
+/* Primary button: web submit-button values (px-12 py-3.5, bold,
+   hover #0257bf light / #0071e3 dark via --ed-accent-hover). */
+.opt-btn-primary {
+  display: inline-block;
+  background-color: var(--ed-accent);
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: bold;
+  padding: 14px 48px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  line-height: normal;
+  box-shadow: 0 2px 8px rgba(1, 109, 240, 0.25);
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.opt-btn-primary:hover {
+  background-color: var(--ed-accent-hover);
+  transform: translateY(-1px);
+}
+
+/* --- Native-control accents + focus ---------------------------------- */
 
 input[type='radio'],
 input[type='checkbox'],
 input[type='range'] {
-  accent-color: var(--accent);
+  accent-color: var(--ed-accent);
 }
 
 select:focus-visible,
 input:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--accent);
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--ed-accent);
   outline-offset: 1px;
+}
+
+/* --- Responsive (web breakpoints) ------------------------------------- */
+
+@media (min-width: 640px) {
+  .opt-label {
+    font-size: 1.125rem;
+  }
+
+  .opt-num {
+    width: 72px;
+    font-size: 1.25em;
+  }
+
+  .opt-unit-select {
+    width: 155px;
+  }
+}
+
+@media (max-width: 600px) {
+  .opt-header-inner {
+    padding: 10px 12px;
+  }
+
+  .opt-main {
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .opt-card {
+    padding: 16px;
+  }
+
+  .opt-btn-primary {
+    width: 100%;
+    max-width: 320px;
+    padding: 14px 20px;
+    font-size: 1.05rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .opt-num {
+    width: 62px;
+  }
+
+  .opt-unit-select {
+    width: 108px;
+  }
+}
+
+/* Ultra-compact screens (320–360px): shorter controls, tighter gaps. */
+@media (max-width: 360px) {
+  .opt-input,
+  .opt-select {
+    height: 44px;
+    font-size: 0.875rem;
+  }
+
+  .opt-num {
+    width: 52px;
+    height: 44px;
+    font-size: 1em;
+  }
+
+  .opt-unit-select {
+    width: 95px;
+    height: 44px;
+    font-size: 0.85rem;
+  }
+
+  .opt-appearance-row {
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opt-swatch,
+  .opt-btn-primary,
+  .opt-input,
+  .opt-select,
+  .opt-num,
+  .opt-unit-select {
+    transition: none;
+  }
 }

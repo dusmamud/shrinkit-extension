@@ -460,12 +460,12 @@ export default function MainResizer({
   const doneCount = items.filter((i) => i.status === 'done').length;
 
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-4">
+    <div className="mx-auto box-border w-full min-w-0 max-w-[960px] px-4">
       {!browserSupported && (
         <div
           id="unsupported_browser_message"
           role="alert"
-          className="mx-auto mb-6 rounded-[6px] border border-[var(--ed-line)] bg-[var(--ed-error-soft)] p-4 text-center text-sm font-medium text-[var(--ed-error)]"
+          className="mx-auto mb-6 box-border w-full min-w-0 max-w-full rounded-[6px] border border-[var(--ed-line)] bg-[var(--ed-error-soft)] p-4 text-center text-sm font-medium break-words text-[var(--ed-error)]"
         >
           {t(locale, 'errors.browser_unsupported')}{' '}
           <a
@@ -489,21 +489,25 @@ export default function MainResizer({
         </div>
       )}
 
-      <Dropzone
-        files={items}
-        onFiles={addFiles}
-        maxFiles={MAX_BATCH}
-        locale={locale}
-        disabled={running}
-        onRemove={removeItem}
-        processing={running}
-        error={formError}
-        failedFiles={failedFiles}
-        onDismissError={() => {
-          setFormError(null);
-          setFailedFiles([]);
-        }}
-      />
+      {/* Dropzone is owned by another worker — this wrapper caps it at the
+          web app's 940px dropzone width inside the 960px container. */}
+      <div className="mx-auto box-border w-full min-w-0 max-w-[940px]">
+        <Dropzone
+          files={items}
+          onFiles={addFiles}
+          maxFiles={MAX_BATCH}
+          locale={locale}
+          disabled={running}
+          onRemove={removeItem}
+          processing={running}
+          error={formError}
+          failedFiles={failedFiles}
+          onDismissError={() => {
+            setFormError(null);
+            setFailedFiles([]);
+          }}
+        />
+      </div>
 
       {items.length > 0 && (
         <>
@@ -521,7 +525,10 @@ export default function MainResizer({
             onAbort={() => abortRef.current?.abort()}
           />
 
-          <div ref={resultRef} className="mx-auto w-full max-w-[1100px] scroll-mt-8">
+          <div
+            ref={resultRef}
+            className="mx-auto box-border w-full min-w-0 max-w-[960px] scroll-mt-8"
+          >
             <ResultPanel
               items={items}
               onDownload={downloadItem}
@@ -533,11 +540,11 @@ export default function MainResizer({
           </div>
 
           {doneCount === items.length && doneCount > 0 && !running && (
-            <div className="mt-6 text-center">
+            <div className="mt-6 min-w-0 text-center">
               <button
                 type="button"
                 onClick={clearAll}
-                className="inline-flex items-center gap-2 rounded-[6px] border border-[var(--ed-accent)] px-6 py-2.5 text-sm font-medium text-[var(--ed-accent)] transition hover:bg-[var(--ed-accent)] hover:text-white"
+                className="inline-flex max-w-full items-center gap-2 rounded-[6px] border border-[var(--ed-accent)] px-6 py-2.5 text-sm font-medium break-words text-[var(--ed-accent)] transition hover:bg-[var(--ed-accent)] hover:text-white"
               >
                 {t(locale, 'result.new_image')}
               </button>

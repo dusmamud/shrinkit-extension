@@ -41,21 +41,16 @@ function WarningIcon({ size = 22 }: { size?: number }) {
 /** Original upload-arrow mark drawn for ShrinkIt. */
 function UploadMark() {
   return (
-    <svg
-      viewBox="0 0 110 110"
-      fill="none"
-      aria-hidden="true"
-      className="h-16 w-16 sm:h-[110px] sm:w-[110px]"
-    >
-      <path d="M55 80V32" stroke="var(--ed-accent)" strokeWidth="7" strokeLinecap="round" />
+    <svg viewBox="0 0 110 110" fill="none" aria-hidden="true" className="h-8 w-8 sm:h-9 sm:w-9">
+      <path d="M55 80V32" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
       <path
         d="M34 53l21-21 21 21"
-        stroke="var(--ed-accent)"
+        stroke="currentColor"
         strokeWidth="7"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M24 92h62" stroke="var(--ed-accent)" strokeWidth="7" strokeLinecap="round" />
+      <path d="M24 92h62" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
     </svg>
   );
 }
@@ -131,18 +126,19 @@ export default function Dropzone({
         setDragging(false);
         emit(e.dataTransfer.files);
       }}
-      className="relative mx-auto w-full max-w-[1100px] cursor-pointer rounded-[6px] bg-[var(--ed-dropzone)] px-3 py-6 text-center transition sm:px-6 sm:py-12"
+      className="group relative mx-auto box-border w-full min-w-0 max-w-[940px] cursor-pointer rounded-2xl bg-[var(--ed-dropzone)] px-4 py-6 text-center shadow-sm transition hover:bg-[color-mix(in_srgb,var(--ed-surface-2)_30%,transparent)] sm:px-8 sm:py-8 md:py-9"
     >
-      {/* Dashed border drawn as an SVG rect (reference style) */}
+      {/* Dashed border drawn as an SVG rect (reference style). Drag-over
+          state = thicker dash stroke, exactly like the web Dropzone. */}
       <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
         <rect
           x="2"
           y="2"
-          rx="6"
+          rx="14"
           fill="none"
           stroke="var(--ed-dash)"
           strokeWidth={dragging ? 3.5 : 2}
-          strokeDasharray="6 12"
+          strokeDasharray="6 10"
           strokeLinecap="round"
           style={{ width: 'calc(100% - 4px)', height: 'calc(100% - 4px)' }}
         />
@@ -163,44 +159,43 @@ export default function Dropzone({
       />
 
       {processing && (
-        <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#1a1d23] px-5 py-2 text-sm font-normal text-white shadow-lg">
+        <div className="absolute left-1/2 top-4 z-10 max-w-[calc(100%-1rem)] -translate-x-1/2 truncate whitespace-nowrap rounded-full bg-[#1a1d23] px-5 py-2 text-sm font-normal text-white shadow-lg">
           <span className="dots">{t(locale, 'dropzone.processing')}</span>
         </div>
       )}
 
-      <div className="flex flex-col items-center">
-        <UploadMark />
-        <p className="mt-4 px-2 text-[1.15em] font-medium text-[var(--ed-ink)] sm:mt-6 sm:text-[1.4em]">
+      <div className="flex min-w-0 flex-col items-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--ed-accent)_10%,transparent)] text-[var(--ed-accent)] transition duration-200 group-hover:scale-105 sm:h-16 sm:w-16">
+          <UploadMark />
+        </div>
+        <p className="mt-3 px-2 text-base font-semibold text-[var(--ed-ink)] sm:mt-4 sm:text-lg md:text-xl">
           {t(locale, 'dropzone.title_a')}{' '}
           <span className="text-[var(--ed-accent)] hover:underline">
             {t(locale, 'dropzone.browse')}
-          </span>{' '}
-          <span className="mt-1 block text-xs font-normal text-[var(--ed-muted)] sm:mt-0 sm:inline sm:text-sm">
+          </span>
+          <span className="mt-1 block text-xs font-normal text-[var(--ed-muted)] sm:ml-1 sm:mt-0 sm:inline sm:text-sm">
             {t(locale, 'dropzone.paste_hint')}
           </span>
         </p>
-        <span className="mt-4 inline-block w-full max-w-[280px] rounded-[6px] bg-[var(--ed-accent)] px-6 py-3.5 text-base font-bold text-white transition hover:bg-[var(--ed-accent-hover)] sm:mt-6 sm:w-auto sm:px-[30px] sm:py-[18px]">
+        <span className="mt-3.5 inline-flex w-full max-w-[240px] items-center justify-center rounded-[8px] bg-[var(--ed-accent)] px-7 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0257bf] hover:shadow-md active:scale-95 sm:mt-5 sm:w-auto sm:text-base">
           {t(locale, 'dropzone.select')}
         </span>
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 px-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--ed-pill-line)] bg-[var(--ed-pill-bg)] px-3.5 py-1 text-center text-xs font-medium text-[var(--ed-pill-text)]">
+        <div className="mt-3 flex min-w-0 max-w-full flex-wrap items-center justify-center gap-2 px-2 sm:mt-4">
+          <span className="inline-flex max-w-full items-center gap-1.5 whitespace-normal break-words rounded-full border border-[var(--ed-pill-line)] bg-[var(--ed-pill-bg)] px-3.5 py-1 text-center text-xs font-medium text-[var(--ed-pill-text)]">
             {t(locale, 'dropzone.limits_info')}
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--ed-pill-line)] bg-[var(--ed-pill-bg)] px-3.5 py-1 text-center text-xs font-medium text-[var(--ed-pill-text)]">
-            {t(locale, 'settings.format')}: JPG · PNG · WebP · GIF
           </span>
         </div>
       </div>
 
       {files.length > 0 && (
         <div
-          className="mt-8 flex flex-col items-center"
+          className="mt-8 flex w-full min-w-0 max-w-full flex-col items-center"
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
         >
-          <div className="mb-3 flex items-center gap-2">
+          <div className="mb-3 flex min-w-0 max-w-full flex-wrap items-center justify-center gap-2">
             <span
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+              className={`max-w-full rounded-full border px-3 py-1 text-xs font-semibold ${
                 files.length >= maxFiles
                   ? 'border-[var(--ed-error)] bg-[var(--ed-error-soft)] text-[var(--ed-error)]'
                   : 'border-[var(--ed-line)] bg-[var(--ed-surface)] text-[var(--ed-ink-2)] shadow-sm'
@@ -211,12 +206,12 @@ export default function Dropzone({
                 : t(locale, 'dropzone.batch_count', { count: files.length, max: maxFiles })}
             </span>
           </div>
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex w-full min-w-0 max-w-full flex-wrap justify-center gap-4">
             {files.map((item) => (
               <div
                 key={item.id}
                 data-testid={`thumb-${item.id}`}
-                className="relative w-[140px] rounded-[6px] border border-[var(--ed-dash)] bg-[var(--ed-surface)] transition duration-150 hover:scale-[1.02] hover:shadow-[0_8px_24px_rgba(0,123,255,0.18)]"
+                className="relative box-border w-[140px] min-w-0 max-w-full rounded-[6px] border border-[var(--ed-dash)] bg-[var(--ed-surface)] transition duration-150 hover:scale-[1.02] hover:shadow-[0_8px_24px_color-mix(in_srgb,var(--ed-accent)_18%,transparent)]"
               >
                 {onRemove && (
                   <button
@@ -228,7 +223,7 @@ export default function Dropzone({
                     <CloseIcon size={14} />
                   </button>
                 )}
-                <div className="checkerboard flex h-[110px] w-[138px] items-center justify-center overflow-hidden rounded-t-[5px] bg-[var(--ed-thumb-bg)]">
+                <div className="checkerboard flex h-[110px] w-full min-w-0 max-w-[138px] items-center justify-center overflow-hidden rounded-t-[5px] bg-[var(--ed-thumb-bg)]">
                   <img
                     src={item.previewUrl}
                     alt={item.file.name}
@@ -236,9 +231,9 @@ export default function Dropzone({
                     loading="lazy"
                   />
                 </div>
-                <div className="p-2 text-left">
+                <div className="min-w-0 p-2 text-left">
                   <p
-                    className="clamp-2 text-xs font-normal leading-snug text-[var(--ed-ink)]"
+                    className="clamp-2 min-w-0 break-words text-xs font-normal leading-snug text-[var(--ed-ink)]"
                     title={item.file.name}
                   >
                     {item.file.name}
@@ -258,18 +253,18 @@ export default function Dropzone({
         <div
           id="error_message_offline"
           role="alert"
-          className="mx-auto mt-8 flex max-w-xl items-start gap-3 rounded-[6px] bg-[#d33] p-4 text-left text-sm text-white shadow-sm transition"
+          className="mx-auto mt-8 box-border flex w-full min-w-0 max-w-xl items-start gap-3 rounded-[6px] bg-[#d33] p-4 text-left text-sm text-white shadow-sm transition"
           onClick={(e) => e.stopPropagation()}
         >
           <span className="mt-0.5 shrink-0 text-white">
             <WarningIcon size={22} />
           </span>
-          <div className="flex-1">
+          <div className="min-w-0 flex-1 break-words">
             <div className="font-semibold text-white">
               {failedFiles.length > 1 ? t(locale, 'errors.unsupported_many') : error}
             </div>
             {failedFiles.length > 0 && (
-              <div id="failedFilesList" className="mt-1 font-mono text-xs text-white/80">
+              <div id="failedFilesList" className="mt-1 break-all font-mono text-xs text-white/80">
                 {failedFiles.join(', ')}
               </div>
             )}
@@ -282,7 +277,7 @@ export default function Dropzone({
               type="button"
               onClick={onDismissError}
               aria-label={t(locale, 'errors.dismiss')}
-              className="text-white/80 transition hover:text-white"
+              className="shrink-0 text-white/80 transition hover:text-white"
             >
               <CloseIcon size={16} />
             </button>
@@ -292,19 +287,19 @@ export default function Dropzone({
       {!error && localRejected.length > 0 && (
         <div
           role="alert"
-          className="mx-auto mt-8 flex max-w-xl items-start gap-3 rounded-[6px] bg-[#d33] p-4 text-left text-sm text-white shadow-sm transition"
+          className="mx-auto mt-8 box-border flex w-full min-w-0 max-w-xl items-start gap-3 rounded-[6px] bg-[#d33] p-4 text-left text-sm text-white shadow-sm transition"
           onClick={(e) => e.stopPropagation()}
         >
           <span className="mt-0.5 shrink-0 text-white">
             <WarningIcon size={22} />
           </span>
-          <div className="flex-1">
+          <div className="min-w-0 flex-1 break-words">
             <div className="font-semibold text-white">
               {localRejected.length > 1
                 ? t(locale, 'errors.unsupported_many')
                 : t(locale, 'errors.unsupported', { name: localRejected[0] })}
             </div>
-            <div id="failedFilesList" className="mt-1 font-mono text-xs text-white/80">
+            <div id="failedFilesList" className="mt-1 break-all font-mono text-xs text-white/80">
               {localRejected.join(', ')}
             </div>
           </div>
@@ -312,7 +307,7 @@ export default function Dropzone({
             type="button"
             onClick={() => setLocalRejected([])}
             aria-label={t(locale, 'errors.dismiss')}
-            className="text-white/80 transition hover:text-white"
+            className="shrink-0 text-white/80 transition hover:text-white"
           >
             <CloseIcon size={16} />
           </button>

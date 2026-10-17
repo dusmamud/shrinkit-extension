@@ -14,12 +14,17 @@ const FORMAT_OPTIONS: Settings['lastFormat'][] = ['jpeg', 'png', 'webp', 'gif'];
 
 const DPI_OPTIONS: number[] = [72, 150, 300];
 
+/* Web values as var() fallbacks: the Options page loads no --ed-* sheet,
+   so the fallback is the live value there; in the editor the --ed-*
+   token (fixed by the token pass to the web value) wins. */
 const selectClass =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100';
+  'w-full h-[50px] rounded-[6px] border border-[var(--ed-input-line,#cbd5e1)] bg-[var(--ed-input-bg,#ffffff)] px-3.5 text-sm text-[var(--ed-ink-2,#1d2939)] outline-none transition focus:border-[var(--ed-accent,#016df0)]';
 
-const labelClass = 'block text-sm font-medium text-slate-700 dark:text-slate-200';
+const labelClass = 'block text-sm font-medium text-[var(--ed-ink,#000000)]';
 
-const radioRowClass = 'flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200';
+const radioRowClass = 'flex min-w-0 items-center gap-2 text-sm text-[var(--ed-ink-2,#1d2939)]';
+
+const controlClass = 'shrink-0 accent-[var(--ed-accent,#016df0)]';
 
 /**
  * Reusable settings form: Defaults + Behaviour sections.
@@ -29,16 +34,16 @@ const radioRowClass = 'flex items-center gap-2 text-sm text-slate-700 dark:text-
  */
 export default function SettingsForm({ settings, onChange, locale }: SettingsFormProps) {
   return (
-    <div className="space-y-8">
+    <div className="min-w-0 space-y-8">
       <section aria-labelledby="settings-defaults-heading">
         <h3
           id="settings-defaults-heading"
-          className="mb-4 text-base font-semibold text-slate-900 dark:text-white"
+          className="mb-4 text-base font-semibold text-[var(--ed-ink,#000000)]"
         >
           {t(locale, 'options.defaults')}
         </h3>
         <div className="space-y-5">
-          <div>
+          <div className="min-w-0">
             <label htmlFor="settings-default-preset" className={labelClass}>
               {t(locale, 'options.defaults.preset')}
             </label>
@@ -58,7 +63,7 @@ export default function SettingsForm({ settings, onChange, locale }: SettingsFor
             </select>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label htmlFor="settings-default-format" className={labelClass}>
               {t(locale, 'options.defaults.format')}
             </label>
@@ -78,31 +83,31 @@ export default function SettingsForm({ settings, onChange, locale }: SettingsFor
             </select>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label htmlFor="settings-default-quality" className={labelClass}>
               {t(locale, 'options.defaults.quality')}
             </label>
-            <div className="mt-1 flex items-center gap-3">
+            <div className="mt-1 flex min-w-0 items-center gap-3">
               <input
                 id="settings-default-quality"
                 type="range"
                 min={1}
                 max={100}
                 step={1}
-                className="w-full"
+                className={`min-w-0 flex-1 ${controlClass}`}
                 value={Number(settings.lastQuality)}
                 onChange={(event) => onChange({ lastQuality: String(event.target.value) })}
               />
               <output
                 htmlFor="settings-default-quality"
-                className="w-12 shrink-0 text-right text-sm font-medium text-slate-900 tabular-nums dark:text-white"
+                className="w-12 shrink-0 text-right text-sm font-medium text-[var(--ed-ink-2,#1d2939)] tabular-nums"
               >
                 {settings.lastQuality}
               </output>
             </div>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label htmlFor="settings-default-dpi" className={labelClass}>
               {t(locale, 'options.defaults.dpi')}
             </label>
@@ -125,12 +130,12 @@ export default function SettingsForm({ settings, onChange, locale }: SettingsFor
       <section aria-labelledby="settings-behaviour-heading">
         <h3
           id="settings-behaviour-heading"
-          className="mb-4 text-base font-semibold text-slate-900 dark:text-white"
+          className="mb-4 text-base font-semibold text-[var(--ed-ink,#000000)]"
         >
           {t(locale, 'options.behaviour')}
         </h3>
         <div className="space-y-5">
-          <fieldset>
+          <fieldset className="min-w-0">
             <legend className={labelClass}>{t(locale, 'options.behaviour.downloadMode')}</legend>
             <div className="mt-2 space-y-2">
               <label className={radioRowClass}>
@@ -138,20 +143,26 @@ export default function SettingsForm({ settings, onChange, locale }: SettingsFor
                   type="radio"
                   name="settings-download-mode"
                   value="auto"
+                  className={controlClass}
                   checked={settings.downloadMode === 'auto'}
                   onChange={() => onChange({ downloadMode: 'auto' })}
                 />
-                {t(locale, 'options.behaviour.downloadMode.auto')}
+                <span className="min-w-0 break-words">
+                  {t(locale, 'options.behaviour.downloadMode.auto')}
+                </span>
               </label>
               <label className={radioRowClass}>
                 <input
                   type="radio"
                   name="settings-download-mode"
                   value="ask"
+                  className={controlClass}
                   checked={settings.downloadMode === 'ask'}
                   onChange={() => onChange({ downloadMode: 'ask' })}
                 />
-                {t(locale, 'options.behaviour.downloadMode.ask')}
+                <span className="min-w-0 break-words">
+                  {t(locale, 'options.behaviour.downloadMode.ask')}
+                </span>
               </label>
             </div>
           </fieldset>
@@ -159,13 +170,16 @@ export default function SettingsForm({ settings, onChange, locale }: SettingsFor
           <label className={radioRowClass}>
             <input
               type="checkbox"
+              className={controlClass}
               checked={settings.preserveExif}
               onChange={(event) => onChange({ preserveExif: event.target.checked })}
             />
-            {t(locale, 'options.behaviour.preserveExif')}
+            <span className="min-w-0 break-words">
+              {t(locale, 'options.behaviour.preserveExif')}
+            </span>
           </label>
 
-          <fieldset>
+          <fieldset className="min-w-0">
             <legend className={labelClass}>{t(locale, 'options.behaviour.background')}</legend>
             <div className="mt-2 space-y-2">
               <label className={radioRowClass}>
@@ -173,28 +187,34 @@ export default function SettingsForm({ settings, onChange, locale }: SettingsFor
                   type="radio"
                   name="settings-background"
                   value="white"
+                  className={controlClass}
                   checked={settings.background === 'white'}
                   onChange={() => onChange({ background: 'white' })}
                 />
                 <span
                   aria-hidden="true"
-                  className="inline-block h-4 w-4 rounded-full border border-slate-300 bg-white"
+                  className="inline-block h-4 w-4 shrink-0 rounded-full border border-[var(--ed-input-line,#cbd5e1)] bg-white"
                 />
-                {t(locale, 'options.behaviour.background.white')}
+                <span className="min-w-0 break-words">
+                  {t(locale, 'options.behaviour.background.white')}
+                </span>
               </label>
               <label className={radioRowClass}>
                 <input
                   type="radio"
                   name="settings-background"
                   value="black"
+                  className={controlClass}
                   checked={settings.background === 'black'}
                   onChange={() => onChange({ background: 'black' })}
                 />
                 <span
                   aria-hidden="true"
-                  className="inline-block h-4 w-4 rounded-full border border-slate-300 bg-black"
+                  className="inline-block h-4 w-4 shrink-0 rounded-full border border-[var(--ed-input-line,#cbd5e1)] bg-black"
                 />
-                {t(locale, 'options.behaviour.background.black')}
+                <span className="min-w-0 break-words">
+                  {t(locale, 'options.behaviour.background.black')}
+                </span>
               </label>
             </div>
           </fieldset>

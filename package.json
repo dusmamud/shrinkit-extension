@@ -30,6 +30,7 @@
   "scripts": {
     "build": "wxt build",
     "check:css": "node scripts/check-tailwind.mjs",
+    "check:responsive": "node scripts/check-responsive.mjs",
     "dev": "wxt",
     "format": "prettier --check .",
     "format:write": "prettier --write .",

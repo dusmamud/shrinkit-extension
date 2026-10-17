@@ -190,3 +190,97 @@ Consequence: the manifest must **NOT** set `default_locale`. Setting `default_lo
 | NOT supported | SVG (neither input nor output)        |
 
 All upload/filter paths must use the single shared `isSupportedInputFile` check (extension-based), never an ad-hoc `file.type` prefix check. MIME types can be missing or inconsistent for formats such as BMP / AVIF, so a MIME-only filter wrongly rejects real files and makes SVG handling inconsistent across surfaces. Tool slugs are unified across popup, editor, and right-click flows.
+
+---
+
+## Responsive + token parity with the web app
+
+The extension mirrors the ShrinkIt web app's geometry, tokens, and
+responsive behaviour. The web app (`~/workspace/shrinkit`) is a
+read-only reference — the extension does not depend on it at runtime.
+
+### Tokens — three layers, one source of truth
+
+1. **`--t-*` definitions** in `src/styles/global.css` — 59 tokens in
+   `:root` (Light) + 59 in `[data-theme='dark']` (Dark 2 / Graphite),
+   ported verbatim from the web app. These are the only token values
+   that matter; tests pin all 118 of them.
+2. **`--ed-*` / `--accent` aliases** in `global.css` — `html:root`
+   aliases point every legacy `--ed-*` name at its matching `--t-*`
+   token (`--ed-accent` → `--t-accent`, `--ed-line` → `--t-border`,
+   …), and `:root` maps `--accent` → `--t-accent`,
+   `--accent-hover` → `--t-btn-b`. Specificity (`html:root` 0,1,1)
+   beats the `:root` (0,1,0) definitions, so the aliases win over the
+   stale pre-parity `--ed-*` literals still present in
+   `entrypoints/editor/style.css` (kept as fallback only; the token
+   tests pin the aliases, not the stale literals).
+3. **`var(--t-*, <web Light fallback>)` usages** in popup/editor CSS —
+   every hex fallback equals the web Light value, so the UI is correct
+   even if `global.css` ever failed to load. Dark surfaces in the popup
+   carry web Dark 2 values as literals.
+
+Every entrypoint imports `global.css` **before** its own `style.css`,
+so the tokens + aliases apply on all three pages. Tests pin this import
+order.
+
+### Container geometry
+
+| Surface             | Width  | Source of the value                                                 |
+| ------------------- | ------ | ------------------------------------------------------------------- |
+| Editor header inner | 1075px | Web `Header.astro`                                                  |
+| Editor main wrapper | 960px  | Web `ShrinkItApp.tsx`                                               |
+| Dropzone            | 940px  | Web `Dropzone.tsx` (rounded-2xl, px-4 sm:px-8 py-6 sm:py-8 md:py-9) |
+| Settings form       | 650px  | Web `SettingsPanel.tsx`                                             |
+| Popup               | 400px  | Extension-only (Chrome popup geometry), max 560px tall              |
+
+Plain-CSS shell rules in `entrypoints/editor/style.css` mirror the
+Tailwind classes, so the shell keeps its geometry even if Tailwind
+failed to load. No container is 1100px; no fixed width above 1100px
+exists in extension CSS/TSX/TS (media-query preludes excluded —
+breakpoints are not widths).
+
+### Breakpoints + overflow safeguards
+
+Handled in code: **320 / 360 / 390 / 400 / 480 / 600 / 768 / 960**
+(`global.css` shared guards + `editor/style.css` header rules). The
+web's 1184 swiper edge fades are intentionally not copied — the
+extension has no swiper. Overflow is guarded by `flex-wrap` +
+`min-width: 0` + `overflow-x: clip` + `max-width: 100%` +
+`box-sizing: border-box` (including a global `min-width: 0` /
+`max-width: 100%` guard for media). Logos are pinned to 32px (attrs +
+inline style + CSS) on editor and popup headers.
+
+| Viewport | Code evidence checked (NOT a real-browser run)                 |
+| -------- | -------------------------------------------------------------- |
+| 320px    | `@media 320px` shared guard; shell `w-full` + `px-4`           |
+| 360px    | `@media 360px`; header stacks, tabs shrink                     |
+| 390px    | `@media 390px` shared guard; `@media 400px` editor rules apply |
+| 400px    | Popup exact width 400px; editor `@media 400px`                 |
+| 480px    | `@media 480px`; header tabs shrink                             |
+| 600px    | `@media 600px`; dropzone wraps                                 |
+| 768px    | `min-width:768px`; settings label shows                        |
+| 960px    | Main container caps at 960px                                   |
+| 1075px   | Header inner caps at 1075px                                    |
+| 1440px   | Containers stay capped; no full-width stretch                  |
+
+### Guards
+
+- `tests/unit/responsive-parity.test.ts` — the full contract (21 tests).
+- `tests/unit/css-guard.test.ts` — 4 fast spot-checks appended to the
+  existing CSS guard.
+- `npm run check:responsive` — CLI mirror + width table (built-CSS part
+  needs `npm run build` first).
+
+### Honest scope
+
+Static checks prove the code carries the right containers, tokens,
+breakpoints, and shrink guards. They do NOT prove nothing overflows in
+a real browser. Verify in real Chrome at **390px and 1440px** (plus
+320/360px if time allows) before calling the UI matched.
+
+One known wart: built CSS still contains an unused 1100 utility because
+Tailwind v4's scanner picks up the class string from a guard script's
+marker text (`scripts/check-tailwind.mjs`). Source-level absence is the
+real guard; `check:responsive` reports the built-CSS 1100 as WARN, not
+FAIL. This worker's guard files avoid the literal forbidden class
+(concatenated construction) so they cannot add to it.

@@ -85,3 +85,54 @@ describe('Logo / Tailwind hardening guard', () => {
     expect(main).toMatch(/import\s+['"][^'"]*global\.css['"]/);
   });
 });
+
+/**
+ * Responsive parity spot-checks (web-app targets). The full contract lives
+ * in responsive-parity.test.ts; these four are the fast fail-fast subset
+ * appended to the CSS guard so a container/token/breakpoint regression
+ * trips the same file that already guards the logo / Tailwind wiring.
+ */
+function stripCssComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+describe('Responsive parity spot-checks (web-app targets)', () => {
+  it('no 1100px container survives in Editor / MainResizer / Dropzone / editor shell CSS', () => {
+    for (const file of [
+      'entrypoints/editor/Editor.tsx',
+      'src/components/MainResizer.tsx',
+      'src/components/Dropzone.tsx',
+      'entrypoints/editor/style.css',
+    ]) {
+      expect(stripCssComments(readSource(file)), `${file} must not contain 1100px`).not.toContain(
+        '1100px',
+      );
+    }
+  });
+
+  it('popup root is 400px wide', () => {
+    const css = readSource('entrypoints/popup/style.css');
+    expect(css).toMatch(/\.popup-root\s*\{[^}]*width:\s*400px/);
+  });
+
+  it('global.css Light --t-accent is the web accent #016df0', () => {
+    const css = readSource('src/styles/global.css');
+    const rootBlock = css.match(/^:root\s*\{([^}]*)\}/m)?.[1] ?? '';
+    expect(rootBlock).toMatch(/--t-accent:\s*#016df0\b/);
+  });
+
+  it('web breakpoints 360/400/480/600 are handled in extension CSS', () => {
+    const combined = [
+      readSource('src/styles/global.css'),
+      readSource('entrypoints/editor/style.css'),
+      readSource('entrypoints/popup/style.css'),
+    ]
+      .map(stripCssComments)
+      .join('\n');
+    for (const bp of [360, 400, 480, 600]) {
+      expect(combined, `breakpoint ${bp}px handled`).toMatch(
+        new RegExp(`(max-width:\\s*${bp}px|min-width:\\s*${bp}px)`),
+      );
+    }
+  });
+});

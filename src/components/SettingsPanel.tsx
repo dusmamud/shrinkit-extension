@@ -44,7 +44,15 @@ const UNITS: SizeUnit[] = ['percent', 'pixels', 'cm', 'inches'];
 const FORMATS: OutputFormat[] = ['jpeg', 'png', 'webp', 'gif'];
 const MODES: ResizeMode[] = ['stretch', 'crop', 'fit'];
 
-function CaretDownIcon({ size = 16, rotated }: { size?: number; rotated?: boolean }) {
+function CaretDownIcon({
+  size = 16,
+  rotated,
+  open,
+}: {
+  size?: number;
+  rotated?: boolean;
+  open?: boolean;
+}) {
   return (
     <svg
       width={size}
@@ -52,9 +60,9 @@ function CaretDownIcon({ size = 16, rotated }: { size?: number; rotated?: boolea
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
-      className={`ml-2 shrink-0 text-[var(--ed-muted)] transition-transform duration-200 ${
+      className={`ml-2 shrink-0 transition-transform duration-200 group-hover:text-[var(--ed-accent)] ${
         rotated ? 'rotate-180' : ''
-      }`}
+      } ${open ? 'text-[var(--ed-accent)]' : 'text-[var(--ed-muted)]'}`}
     >
       <path
         d="m6 9 6 6 6-6"
@@ -285,7 +293,7 @@ function CustomSelect<T extends string = string>({
         >
           {selectedOption ? selectedOption.label : value}
         </span>
-        <CaretDownIcon size={16} rotated={isOpen} />
+        <CaretDownIcon size={16} rotated={isOpen} open={isOpen} />
       </button>
 
       {isOpen && (
@@ -294,7 +302,7 @@ function CustomSelect<T extends string = string>({
           role="listbox"
           tabIndex={-1}
           aria-label={ariaLabel}
-          className={`ed-menu-in absolute z-50 mt-1.5 max-w-[240px] min-w-full overflow-hidden rounded-[10px] border border-[var(--ed-line)] bg-[var(--ed-surface)] py-1.5 shadow-xl transition-all duration-150 ${
+          className={`ed-menu-in absolute z-50 mt-1.5 max-w-[240px] min-w-full w-max overflow-hidden rounded-[10px] border border-[var(--ed-line-soft,#f1f5f9)] bg-[var(--ed-surface)] py-1.5 shadow-xl transition-all duration-150 ${
             align === 'right' ? 'right-0' : 'left-0'
           }`}
         >
@@ -537,154 +545,168 @@ export default function SettingsPanel({
 
         {/* (a) Size Form Area */}
         <div className="size-form-area flex flex-col items-center justify-center">
-          <div className="flex items-center justify-center">
-            {/* Labels Column */}
-            <div className="flex flex-col gap-4 pr-2.5 text-right sm:pr-4">
-              <div className="flex h-[50px] items-center justify-end">
-                <label
-                  htmlFor="set-width"
-                  className="lbl-full whitespace-nowrap text-[0.875rem] font-medium text-[var(--ed-ink)] sm:text-[1.125rem]"
-                >
-                  {t(locale, 'settings.width')}
-                </label>
+          {/* Width/Height + lock + unit: one row on wide (≥480px); stacked on
+              narrow (320/360/390/400) so the row can never overlap. The
+              bracket stays with the inputs; only the unit select drops to
+              its own centred row on narrow. */}
+          <div className="flex flex-col items-center justify-center gap-3 min-[480px]:flex-row min-[480px]:gap-0">
+            <div className="flex items-center justify-center">
+              {/* Labels Column */}
+              <div className="flex flex-col gap-4 pr-2.5 text-right sm:pr-4">
+                <div className="flex h-[50px] items-center justify-end">
+                  <label
+                    htmlFor="set-width"
+                    className="lbl-full whitespace-nowrap text-[0.875rem] font-medium text-[var(--ed-ink)] sm:text-[1.125rem]"
+                  >
+                    {t(locale, 'settings.width')}
+                  </label>
+                </div>
+                <div className="flex h-[50px] items-center justify-end">
+                  <label
+                    htmlFor="set-height"
+                    className="lbl-full whitespace-nowrap text-[0.875rem] font-medium text-[var(--ed-ink)] sm:text-[1.125rem]"
+                  >
+                    {t(locale, 'settings.height')}
+                  </label>
+                </div>
               </div>
-              <div className="flex h-[50px] items-center justify-end">
-                <label
-                  htmlFor="set-height"
-                  className="lbl-full whitespace-nowrap text-[0.875rem] font-medium text-[var(--ed-ink)] sm:text-[1.125rem]"
+
+              {/* Inputs Column */}
+              <div className="flex flex-col gap-4">
+                <input
+                  id="set-width"
+                  data-testid="width-input"
+                  type="number"
+                  min={unitLimit.min}
+                  max={unitLimit.max}
+                  step="any"
+                  value={settings.width}
+                  disabled={disabled}
+                  onChange={(e) => setWidth(e.target.value)}
+                  title={widthError || `${unitLimit.min}–${unitLimit.max}${unitLimit.suffix}`}
+                  className={inputClass(isWidthInvalid)}
+                />
+                <input
+                  id="set-height"
+                  data-testid="height-input"
+                  type="number"
+                  min={unitLimit.min}
+                  max={unitLimit.max}
+                  step="any"
+                  value={settings.height}
+                  disabled={disabled}
+                  onChange={(e) => setHeight(e.target.value)}
+                  title={heightError || `${unitLimit.min}–${unitLimit.max}${unitLimit.suffix}`}
+                  className={inputClass(isHeightInvalid)}
+                />
+              </div>
+
+              {/* Bracket + Lock Badge. The horizontal connector line to the unit
+                select is hidden on narrow, where the select sits below. */}
+              <div className="flex items-center">
+                <div
+                  style={{ position: 'relative', width: '58px', height: '116px', flexShrink: 0 }}
                 >
-                  {t(locale, 'settings.height')}
-                </label>
+                  <svg
+                    width="58"
+                    height="116"
+                    viewBox="0 0 58 116"
+                    className="overflow-visible"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M 0 25 L 18 25 Q 26 25 26 33 L 26 45"
+                      fill="none"
+                      stroke={locked ? 'var(--ed-ink-2)' : 'transparent'}
+                      strokeWidth="1.2"
+                    />
+                    <path
+                      d="M 0 91 L 18 91 Q 26 91 26 83 L 26 71"
+                      fill="none"
+                      stroke={locked ? 'var(--ed-ink-2)' : 'transparent'}
+                      strokeWidth="1.2"
+                    />
+                    <line
+                      x1="39"
+                      y1="58"
+                      x2="58"
+                      y2="58"
+                      stroke="var(--ed-ink-2)"
+                      strokeWidth="1.2"
+                      className="hidden min-[480px]:block"
+                    />
+                  </svg>
+                  <button
+                    type="button"
+                    data-testid="aspect-lock"
+                    aria-pressed={locked}
+                    aria-label={t(
+                      locale,
+                      locked ? 'settings.unlock_aspect' : 'settings.lock_aspect',
+                    )}
+                    data-tip={t(locale, 'settings.lock_tip')}
+                    onClick={toggleLock}
+                    style={{
+                      position: 'absolute',
+                      left: '13px',
+                      top: '45px',
+                      width: '26px',
+                      height: '26px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '50%',
+                      zIndex: 10,
+                    }}
+                    className={`transition-transform active:scale-95 ${
+                      locked
+                        ? 'bg-[var(--ed-accent)] text-white shadow-sm'
+                        : 'bg-[var(--ed-badge-off,#667085)] text-white opacity-80'
+                    }`}
+                  >
+                    {locked ? (
+                      <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                        <path
+                          d="M2.5 5.5V3.5C2.5 1.567 4.067 0 6 0C7.933 0 9.5 1.567 9.5 3.5V5.5"
+                          stroke="white"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                        />
+                        <rect y="5.5" width="12" height="8.5" rx="2" fill="white" />
+                        <circle cx="6" cy="9.75" r="1.2" fill="var(--ed-accent)" />
+                      </svg>
+                    ) : (
+                      <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+                        <path
+                          d="M2.5 5.5V3.5C2.5 1.567 4.067 0 6 0C7.933 0 9.5 1.567 9.5 3.5"
+                          stroke="white"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                        />
+                        <rect y="5.5" width="12" height="8.5" rx="2" fill="white" />
+                        <circle cx="6" cy="9.75" r="1.2" fill="var(--ed-badge-off, #667085)" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Inputs Column */}
-            <div className="flex flex-col gap-4">
-              <input
-                id="set-width"
-                data-testid="width-input"
-                type="number"
-                min={unitLimit.min}
-                max={unitLimit.max}
-                step="any"
-                value={settings.width}
-                disabled={disabled}
-                onChange={(e) => setWidth(e.target.value)}
-                title={widthError || `${unitLimit.min}–${unitLimit.max}${unitLimit.suffix}`}
-                className={inputClass(isWidthInvalid)}
-              />
-              <input
-                id="set-height"
-                data-testid="height-input"
-                type="number"
-                min={unitLimit.min}
-                max={unitLimit.max}
-                step="any"
-                value={settings.height}
-                disabled={disabled}
-                onChange={(e) => setHeight(e.target.value)}
-                title={heightError || `${unitLimit.min}–${unitLimit.max}${unitLimit.suffix}`}
-                className={inputClass(isHeightInvalid)}
-              />
-            </div>
-
-            {/* Bracket + Lock Badge + Unit Dropdown */}
-            <div className="flex items-center">
-              <div style={{ position: 'relative', width: '58px', height: '116px', flexShrink: 0 }}>
-                <svg
-                  width="58"
-                  height="116"
-                  viewBox="0 0 58 116"
-                  className="overflow-visible"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M 0 25 L 18 25 Q 26 25 26 33 L 26 45"
-                    fill="none"
-                    stroke={locked ? 'var(--ed-ink-2)' : 'transparent'}
-                    strokeWidth="1.2"
-                  />
-                  <path
-                    d="M 0 91 L 18 91 Q 26 91 26 83 L 26 71"
-                    fill="none"
-                    stroke={locked ? 'var(--ed-ink-2)' : 'transparent'}
-                    strokeWidth="1.2"
-                  />
-                  <line
-                    x1="39"
-                    y1="58"
-                    x2="58"
-                    y2="58"
-                    stroke="var(--ed-ink-2)"
-                    strokeWidth="1.2"
-                  />
-                </svg>
-                <button
-                  type="button"
-                  data-testid="aspect-lock"
-                  aria-pressed={locked}
-                  aria-label={t(locale, locked ? 'settings.unlock_aspect' : 'settings.lock_aspect')}
-                  data-tip={t(locale, 'settings.lock_tip')}
-                  onClick={toggleLock}
-                  style={{
-                    position: 'absolute',
-                    left: '13px',
-                    top: '45px',
-                    width: '26px',
-                    height: '26px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '50%',
-                    zIndex: 10,
-                  }}
-                  className={`transition-transform active:scale-95 ${
-                    locked
-                      ? 'bg-[var(--ed-accent)] text-white shadow-sm'
-                      : 'bg-[#9ca3af] text-white opacity-80'
-                  }`}
-                >
-                  {locked ? (
-                    <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
-                      <path
-                        d="M2.5 5.5V3.5C2.5 1.567 4.067 0 6 0C7.933 0 9.5 1.567 9.5 3.5V5.5"
-                        stroke="white"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                      />
-                      <rect y="5.5" width="12" height="8.5" rx="2" fill="white" />
-                      <circle cx="6" cy="9.75" r="1.2" fill="var(--ed-accent)" />
-                    </svg>
-                  ) : (
-                    <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
-                      <path
-                        d="M2.5 5.5V3.5C2.5 1.567 4.067 0 6 0C7.933 0 9.5 1.567 9.5 3.5"
-                        stroke="white"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                      />
-                      <rect y="5.5" width="12" height="8.5" rx="2" fill="white" />
-                      <circle cx="6" cy="9.75" r="1.2" fill="#9ca3af" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-
-              <CustomSelect<SizeUnit>
-                id="set-unit"
-                testId="unit-select"
-                ariaLabel={t(locale, 'settings.unit')}
-                value={settings.unit}
-                disabled={disabled}
-                onChange={handleUnitChange}
-                className="w-[125px] sm:w-[155px]"
-                triggerClassName="w-full"
-                options={UNITS.map((u) => ({
-                  value: u,
-                  label: t(locale, `settings.units.${u}`),
-                }))}
-              />
-            </div>
+            {/* Unit Dropdown — beside the bracket on wide, own centred row below on narrow */}
+            <CustomSelect<SizeUnit>
+              id="set-unit"
+              testId="unit-select"
+              ariaLabel={t(locale, 'settings.unit')}
+              value={settings.unit}
+              disabled={disabled}
+              onChange={handleUnitChange}
+              className="w-[125px] sm:w-[155px]"
+              triggerClassName="w-full"
+              options={UNITS.map((u) => ({
+                value: u,
+                label: t(locale, `settings.units.${u}`),
+              }))}
+            />
           </div>
 
           {(widthError || heightError) && (
@@ -765,7 +787,7 @@ export default function SettingsPanel({
           aria-hidden={!showModes}
         >
           <div
-            className="flex items-stretch justify-center gap-2 pb-2 sm:gap-4"
+            className="flex flex-wrap items-stretch justify-center gap-2 pb-2 sm:gap-4"
             role="radiogroup"
             aria-label={t(locale, 'settings.resize_mode')}
           >
@@ -782,9 +804,9 @@ export default function SettingsPanel({
                   disabled={disabled}
                   onClick={() => onChange({ mode: m })}
                   className={[
-                    'flex w-24 flex-col items-center gap-1.5 rounded-[6px] px-2 pb-2 pt-3 transition sm:w-28 sm:px-3',
+                    'flex min-w-0 flex-1 basis-[88px] max-w-28 flex-col items-center gap-1.5 rounded-[6px] px-2 pb-2 pt-3 transition sm:w-28 sm:flex-none sm:px-3',
                     selected
-                      ? 'scale-[1.04] border-b-4 border-[#14b8a6]'
+                      ? 'scale-[1.04] border-b-4 border-[var(--ed-teal,#42c3ac)]'
                       : 'hover:bg-[var(--ed-surface-2)]',
                   ].join(' ')}
                 >
@@ -794,7 +816,7 @@ export default function SettingsPanel({
                       className={[
                         'inline-block h-3.5 w-3.5 rounded-full border-2',
                         selected
-                          ? 'border-[var(--ed-accent)] bg-[var(--ed-accent)]'
+                          ? 'border-[var(--ed-accent-2,#1a7af7)] bg-[var(--ed-accent-2,#1a7af7)]'
                           : 'border-[var(--ed-input-line)] bg-[var(--ed-surface)]',
                       ].join(' ')}
                       aria-hidden="true"
@@ -918,9 +940,7 @@ export default function SettingsPanel({
                     } ${
                       selected
                         ? 'border-[3px] border-[var(--ed-accent)] ring-[3px] ring-[var(--ed-accent)]'
-                        : c === 'white'
-                          ? 'border border-[#ddd]'
-                          : 'border border-black'
+                        : 'border border-[var(--ed-line)]'
                     }`}
                   />
                 );
@@ -939,7 +959,7 @@ export default function SettingsPanel({
               onClick={onProcess}
               disabled={disabled || processing || itemCount === 0 || Boolean(validationError)}
               title={validationError || undefined}
-              className="block w-full rounded-[6px] bg-[var(--ed-accent)] px-12 py-3.5 text-[1.125rem] font-bold text-white shadow-sm transition hover:bg-[var(--ed-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-block max-w-full rounded-[6px] bg-[var(--ed-accent)] px-12 py-3.5 text-[1.125rem] font-bold text-white shadow-sm transition hover:bg-[#0257bf] disabled:cursor-not-allowed disabled:opacity-40"
             >
               {processing
                 ? t(locale, 'settings.processing')
@@ -992,7 +1012,7 @@ export default function SettingsPanel({
               checked={settings.preserveExif}
               disabled={disabled}
               onChange={(e) => onChange({ preserveExif: e.target.checked })}
-              className="h-3.5 w-3.5 accent-[#007bff]"
+              className="h-3.5 w-3.5 accent-[var(--ed-accent)]"
             />
             <span>{t(locale, 'settings.preserve_exif')}</span>
           </label>

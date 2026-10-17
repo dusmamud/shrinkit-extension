@@ -153,3 +153,54 @@ Then load the built extension in Chrome:
 > If popup/editor looks broken, run `npm run check:css`. That guard checks the built CSS actually contains Tailwind utilities. If it fails, the Tailwind wiring is broken again — do not judge the UI until `check:css` passes and you have rebuilt. (Built CSS proof: `npm run check:css` PASS — 53,676 bytes, 3/3 Tailwind markers, logo pinned.)
 
 Supported formats: Input — JPG / JPEG, PNG, GIF, WebP, BMP, AVIF. Output — JPG, PNG, WebP, GIF. SVG is NOT supported.
+
+## Web-app parity
+
+The extension mirrors the ShrinkIt web app's geometry, tokens, and
+responsive behaviour (web app is the read-only reference; the extension
+does not depend on it at runtime).
+
+| Surface / token                         | Web app value                                         | Extension value                                       |
+| --------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| Editor header inner                     | 1075px                                                | 1075px                                                |
+| Editor main wrapper                     | 960px                                                 | 960px                                                 |
+| Dropzone                                | 940px, rounded-2xl, px-4 sm:px-8 py-6 sm:py-8 md:py-9 | 940px + same shape                                    |
+| Settings form                           | 650px                                                 | 650px                                                 |
+| Popup                                   | — (extension-only)                                    | 400px wide, max 560px tall                            |
+| Tokens, Light                           | 59 `--t-*` values                                     | Same 59 values in `global.css`                        |
+| Tokens, Dark 2 (Graphite)               | 59 `--t-*` values                                     | Same 59 values in `global.css`                        |
+| Logo                                    | Header logo 34px (web)                                | Editor + popup header logos pinned 32px               |
+| Breakpoints                             | 600 / 480 / 400 / 360 (+ 1184 swiper, 390 QA)         | 320 / 360 / 390 / 400 / 480 / 600 / 768 / 960 handled |
+| No width > 1100px / no 1100px container | —                                                     | None in extension CSS/TSX/TS (source-level)           |
+
+Width checks (code evidence only — see the honest note below):
+
+| Viewport | What the code carries                                            |
+| -------- | ---------------------------------------------------------------- |
+| 320px    | Editor shell `w-full` + `px-4`; `@media 320px` shared guard      |
+| 360px    | Header stacks, tabs shrink; `@media 360px`                       |
+| 390px    | Editor `@media 400px` rules apply; `@media 390px` shared guard   |
+| 400px    | Popup exact width 400px; editor `@media 400px`                   |
+| 480px    | Header tabs shrink; `@media 480px`                               |
+| 600px    | Dropzone wraps; controls cap at viewport; `@media 600px`         |
+| 768px    | Settings label shows; `@media 768px`                             |
+| 960px    | Main container caps at 960px                                     |
+| 1075px   | Header inner caps at 1075px                                      |
+| 1440px   | Containers stay capped (1075/960/940/650); no full-width stretch |
+
+Parity is guarded by `tests/unit/responsive-parity.test.ts` (containers,
+tokens, fallbacks, breakpoints, overflow safeguards, logo pinning,
+manifest locale), 4 spot-checks in `tests/unit/css-guard.test.ts`, and:
+
+```bash
+npm run check:responsive   # needs `npm run build` first for the built-CSS part
+```
+
+> Honest scope: these are code-level checks. They prove the code carries
+> the right containers, tokens, breakpoints, and shrink guards — they do
+> NOT prove nothing overflows in a real browser. Verify in real Chrome at
+> **390px and 1440px** (plus 320/360px if time allows) before calling the
+> UI matched. Built CSS may still contain an unused 1100 utility because
+> Tailwind's scanner picks up the class string from a guard script's
+> marker text; source-level absence is the real guard — see
+> [VERIFICATION_REPORT.md](VERIFICATION_REPORT.md).

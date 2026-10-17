@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { t } from '../../src/lib/i18n/index';
 import type { Locale } from '../../src/lib/i18n/index';
 import { getSettings, saveSettings, type Theme } from '../../src/lib/settings/index';
@@ -202,8 +202,8 @@ export default function Editor() {
 
   return (
     <div className="ed-page min-h-screen bg-[var(--ed-surface)] text-[var(--ed-ink)]">
-      <header className="ed-header sticky top-0 z-40 border-b border-[var(--ed-line)] bg-[var(--ed-surface)]/95 backdrop-blur">
-        <div className="ed-header-inner mx-auto flex w-full max-w-[1100px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+      <header className="ed-header sticky top-0 z-40 bg-[var(--t-page,var(--ed-surface))]">
+        <div className="ed-header-inner mx-auto flex w-full max-w-[1075px] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-4">
           <a
             href="editor.html"
             className="ed-brand flex items-center gap-2.5"
@@ -225,37 +225,44 @@ export default function Editor() {
               }}
               className="ed-logo h-8 w-8"
             />
-            <span className="ed-brand-name text-lg font-semibold tracking-tight text-[var(--ed-ink)]">
+            <span className="ed-brand-name text-[1.35rem] font-medium tracking-tight text-[var(--t-ink,var(--ed-ink))]">
               {t(locale, 'site.name')}
             </span>
           </a>
 
           <nav
             aria-label={t(locale, 'nav.tools')}
-            className="ed-tabs order-3 flex w-full flex-wrap gap-1.5 sm:order-2 sm:w-auto sm:flex-1 sm:justify-center"
+            className="ed-tabs order-3 flex w-full flex-wrap items-center sm:order-2 sm:w-auto sm:flex-1 sm:justify-center"
           >
-            {TABS.map((tab) => {
+            {TABS.map((tab, i) => {
               const selected = activeTab === tab;
               return (
-                <button
-                  key={tab}
-                  type="button"
-                  role="tab"
-                  aria-selected={selected}
-                  onClick={() => setActiveTab(tab)}
-                  className={`ed-tab rounded-full px-3.5 py-1.5 text-sm font-medium transition sm:px-4 ${
-                    selected
-                      ? 'ed-tab-active bg-[var(--ed-accent)] text-white'
-                      : 'text-[var(--ed-ink-2)] hover:bg-[var(--ed-surface-2)] hover:text-[var(--ed-accent)]'
-                  }`}
-                >
-                  {tabLabel(locale, tab)}
-                </button>
+                <Fragment key={tab}>
+                  {i > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="ed-tab-sep mx-2.5 h-4 w-px bg-[var(--t-divider,var(--ed-line))] xl:mx-4"
+                    />
+                  )}
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    onClick={() => setActiveTab(tab)}
+                    className={`ed-tab px-1 py-2.5 text-[13px] font-normal tracking-[0.8px] transition xl:text-[14px] xl:tracking-[1.17px] ${
+                      selected
+                        ? 'ed-tab-active text-[var(--t-accent,var(--ed-accent))]'
+                        : 'text-[var(--t-ink,var(--ed-ink))] hover:text-[var(--t-accent,var(--ed-accent))]'
+                    }`}
+                  >
+                    {tabLabel(locale, tab)}
+                  </button>
+                </Fragment>
               );
             })}
           </nav>
 
-          <div className="ed-header-actions order-2 ml-auto flex items-center gap-2 sm:order-3 sm:ml-0">
+          <div className="ed-header-actions order-2 ml-auto flex items-center gap-1.5 sm:order-3 sm:ml-0 xl:gap-2">
             <LanguageSwitcher locale={locale} onChange={handleLocaleChange} />
             <ThemeSwitcher locale={locale} theme={theme} onChange={handleThemeChange} />
             <button
@@ -263,7 +270,7 @@ export default function Editor() {
               onClick={handleOpenOptions}
               title={t(locale, 'ext.open_settings')}
               aria-label={t(locale, 'ext.open_settings')}
-              className="ed-settings-btn inline-flex items-center gap-1.5 rounded-[6px] border border-[var(--ed-input-line)] px-2.5 py-2 text-sm font-medium text-[var(--ed-ink-2)] transition hover:border-[var(--ed-accent)] hover:text-[var(--ed-accent)]"
+              className="ed-settings-btn inline-flex items-center gap-1.5 rounded-[6px] border border-[var(--t-divider,var(--ed-input-line))] px-2.5 py-2 text-sm font-medium text-[var(--t-ink-2,var(--ed-ink-2))] transition hover:border-[var(--t-accent,var(--ed-accent))] hover:text-[var(--t-accent,var(--ed-accent))]"
             >
               <GearIcon size={16} />
               <span className="ed-settings-label hidden md:inline">
@@ -275,7 +282,7 @@ export default function Editor() {
       </header>
 
       <main className="ed-main py-6 sm:py-8">
-        <div className="ed-main-inner mx-auto w-full max-w-[1100px] px-4">
+        <div className="ed-main-inner mx-auto w-full max-w-[960px] px-4">
           {preloadError && (
             <div
               role="alert"

@@ -172,7 +172,7 @@ export default function TargetSizeTool({ targetKb: targetKbProp, locale }: Targe
     result && originalBytes > 0 ? Math.round((1 - result.bytes / originalBytes) * 100) : 0;
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
+    <div className="mx-auto box-border w-full min-w-0 max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 text-center">
         <span className="mb-3 inline-flex items-center rounded-full border border-[#007bff]/20 bg-[#007bff]/10 px-3 py-1 text-xs font-medium text-[#007bff]">
           {t(locale, 'tools.targetSize.badge')}
@@ -185,17 +185,17 @@ export default function TargetSizeTool({ targetKb: targetKbProp, locale }: Targe
         </p>
       </div>
 
-      <div className="mb-6 flex flex-col items-center justify-center gap-3">
-        <label className="text-sm font-medium text-slate-900">
+      <div className="mb-6 flex min-w-0 flex-col items-center justify-center gap-3">
+        <label className="text-sm font-medium break-words text-slate-900">
           {t(locale, 'tools.targetSize.chooseTarget')}
         </label>
-        <div className="flex flex-wrap items-center justify-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center justify-center gap-2">
           {TARGET_PRESETS.map((kb) => (
             <button
               key={kb}
               type="button"
               onClick={() => setTargetKb(kb)}
-              className={`cursor-pointer rounded-full px-4 py-1.5 text-sm font-medium transition ${
+              className={`min-w-0 max-w-full cursor-pointer rounded-full px-4 py-1.5 text-sm font-medium break-words transition ${
                 targetKb === kb
                   ? 'scale-105 bg-[#007bff] text-white shadow-sm'
                   : 'border border-slate-200 bg-white text-slate-900 hover:border-[#007bff]'
@@ -204,24 +204,26 @@ export default function TargetSizeTool({ targetKb: targetKbProp, locale }: Targe
               &lt; {kb} KB
             </button>
           ))}
-          <div className="ml-2 flex items-center gap-1">
-            <span className="text-xs text-slate-500">{t(locale, 'tools.targetSize.custom')}</span>
+          <div className="flex min-w-0 flex-wrap items-center gap-1 sm:ml-2">
+            <span className="text-xs break-words text-slate-500">
+              {t(locale, 'tools.targetSize.custom')}
+            </span>
             <input
               type="number"
               min="1"
               max="50000"
               value={targetKb}
               onChange={(e) => setTargetKb(Math.max(1, Number(e.target.value) || 1))}
-              className="h-9 w-20 rounded-md border border-slate-200 bg-white px-2 text-center text-sm font-medium text-slate-900 outline-none focus:border-[#007bff]"
+              className="h-9 w-20 min-w-0 max-w-full rounded-md border border-slate-200 bg-white px-2 text-center text-sm font-medium text-slate-900 outline-none focus:border-[#007bff]"
             />
             <span className="text-xs font-semibold text-slate-900">KB</span>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <span className="text-xs font-medium text-slate-500">
+        <div className="flex min-w-0 flex-wrap items-center justify-center gap-2">
+          <span className="text-xs font-medium break-words text-slate-500">
             {t(locale, 'tools.targetSize.formatLabel')}
           </span>
-          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1">
+          <div className="inline-flex min-w-0 max-w-full rounded-lg border border-slate-200 bg-white p-1">
             {(['jpeg', 'png', 'webp'] as const).map((fmt) => (
               <button
                 key={fmt}
@@ -262,7 +264,7 @@ export default function TargetSizeTool({ targetKb: targetKbProp, locale }: Targe
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
           }}
-          className={`relative flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-white p-10 text-center shadow-sm transition ${
+          className={`relative flex min-w-0 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-white p-6 text-center break-words shadow-sm transition sm:p-10 ${
             dragging ? 'border-[#007bff] bg-[#007bff]/5' : 'border-slate-200 hover:border-[#007bff]'
           }`}
         >
@@ -276,17 +278,17 @@ export default function TargetSizeTool({ targetKb: targetKbProp, locale }: Targe
               e.target.value = '';
             }}
           />
-          <p className="mb-1 text-lg font-semibold text-slate-900">
+          <p className="mb-1 break-words text-lg font-semibold text-slate-900">
             {t(locale, 'tools.targetSize.dropTitle')}
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="break-words text-xs text-slate-500">
             {t(locale, 'tools.targetSize.dropHint', { kb: targetKb })}
           </p>
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col items-center gap-8 md:flex-row">
-            <div className="relative flex aspect-square w-full max-w-70 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner">
+        <div className="box-border min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+          <div className="flex min-w-0 flex-col items-center gap-8 md:flex-row">
+            <div className="relative flex aspect-square w-full min-w-0 max-w-70 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner">
               {previewUrl ? (
                 <img src={previewUrl} alt="" className="h-full w-full object-contain" />
               ) : null}
@@ -297,43 +299,43 @@ export default function TargetSizeTool({ targetKb: targetKbProp, locale }: Targe
               )}
             </div>
 
-            <div className="w-full flex-1 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                <span className="max-w-50 truncate text-sm font-semibold text-slate-900">
+            <div className="w-full min-w-0 flex-1 space-y-4">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                <span className="min-w-0 max-w-full truncate text-sm font-semibold break-words text-slate-900 sm:max-w-50">
                   {file.name}
                 </span>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="cursor-pointer text-xs text-slate-500 transition hover:text-red-600"
+                  className="shrink-0 cursor-pointer text-xs text-slate-500 transition hover:text-red-600"
                 >
                   {t(locale, 'tools.targetSize.remove')}
                 </button>
               </div>
 
               {result && (
-                <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div>
-                    <span className="block text-xs text-slate-500">
+                <div className="grid min-w-0 grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="min-w-0 break-words">
+                    <span className="block text-xs break-words text-slate-500">
                       {t(locale, 'tools.targetSize.originalFile')}
                     </span>
-                    <span className="text-base font-semibold text-slate-900">
+                    <span className="break-words text-base font-semibold text-slate-900">
                       {formatBytes(originalBytes)}
                     </span>
                   </div>
-                  <div>
-                    <span className="block text-xs text-slate-500">
+                  <div className="min-w-0 break-words">
+                    <span className="block text-xs break-words text-slate-500">
                       {t(locale, 'tools.targetSize.targetOutput')}
                     </span>
-                    <span className="text-base font-bold text-[#007bff]">
+                    <span className="break-words text-base font-bold text-[#007bff]">
                       {formatBytes(result.bytes)}
                     </span>
-                    <span className="ml-1.5 text-xs font-semibold text-emerald-600">
+                    <span className="ml-1.5 break-words text-xs font-semibold text-emerald-600">
                       ({savedPercent >= 0 ? '-' : '+'}
                       {Math.abs(savedPercent)}%)
                     </span>
                   </div>
-                  <div className="col-span-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                  <div className="col-span-2 flex min-w-0 flex-wrap gap-x-4 gap-y-1 text-xs break-words text-slate-500">
                     <span>
                       {t(locale, 'tools.targetSize.dimensions', {
                         width: result.width,
@@ -348,18 +350,20 @@ export default function TargetSizeTool({ targetKb: targetKbProp, locale }: Targe
               )}
 
               {result && (
-                <p className="text-xs font-medium text-emerald-600">
+                <p className="min-w-0 break-words text-xs font-medium text-emerald-600">
                   {t(locale, 'tools.targetSize.underTarget', { kb: targetKb, bytes: result.bytes })}
                 </p>
               )}
-              {error && <p className="text-xs font-medium text-red-600">{error}</p>}
+              {error && (
+                <p className="min-w-0 break-words text-xs font-medium text-red-600">{error}</p>
+              )}
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 {result && (
                   <button
                     type="button"
                     onClick={handleDownload}
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#007bff] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#016df0]"
+                    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#007bff] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#016df0] sm:w-auto"
                   >
                     {t(locale, 'tools.targetSize.download')}
                   </button>
@@ -367,7 +371,7 @@ export default function TargetSizeTool({ targetKb: targetKbProp, locale }: Targe
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-900 transition hover:bg-slate-50"
+                  className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-900 transition hover:bg-slate-50 sm:w-auto"
                 >
                   {t(locale, 'tools.targetSize.changePhoto')}
                 </button>

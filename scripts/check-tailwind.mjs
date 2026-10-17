@@ -85,11 +85,11 @@ const markers = [
     // or `.flex-wrap{…}` from hand-written CSS cannot false-positive.
     test: /(?:^|[},])\.flex\{[^}]*display:\s*flex/.test(css),
   },
-  {
-    name: 'max-width:1100px (from max-w-[1100px] arbitrary value)',
-    // Editor header/main use className="… max-w-[1100px] …".
-    test: /max-width:\s*1100px/.test(css),
-  },
+  // NOTE: a third marker for the old 1100px container was REMOVED here on
+  // purpose. Naming that class-shaped string in this file made Tailwind's
+  // scanner emit the 1100px utility into built CSS (self-perpetuating),
+  // and 1100px is forbidden in the UI. The .min-h-screen + .flex markers
+  // above are sufficient proof the plugin generates utilities.
 ];
 const foundMarkers = markers.filter((m) => m.test);
 for (const m of markers) {
@@ -103,7 +103,7 @@ if (foundMarkers.length >= 1) {
 } else {
   failures += 1;
   console.log(
-    'FAIL: at least one Tailwind utility marker present — 0/3 markers found. ' +
+    'FAIL: at least one Tailwind utility marker present — 0/2 markers found. ' +
       'Tailwind is dead: check that wxt.config.ts wires @tailwindcss/vite.',
   );
 }

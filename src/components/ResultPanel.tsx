@@ -303,7 +303,7 @@ export default function ResultPanel({
                     type="button"
                     data-testid={`download-${item.id}`}
                     onClick={() => onDownload(item)}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-l-[8px] bg-[var(--ed-accent)] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[var(--ed-accent-hover)] active:scale-[0.99] sm:text-base"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-l-[8px] bg-[var(--ed-accent)] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0257bf] active:scale-[0.99] sm:text-base"
                   >
                     <DownloadIcon size={18} />
                     <span>{t(locale, 'result.download')}</span>
@@ -318,7 +318,7 @@ export default function ResultPanel({
                       e.stopPropagation();
                       setMenuOpenId(menuOpenId === item.id ? null : item.id);
                     }}
-                    className="inline-flex items-center justify-center rounded-r-[8px] bg-[var(--ed-accent)] px-3.5 py-3.5 text-white transition hover:bg-[var(--ed-accent-hover)] active:scale-[0.99]"
+                    className="inline-flex items-center justify-center rounded-r-[8px] bg-[var(--ed-accent)] px-3.5 py-3.5 text-white transition hover:bg-[#0257bf] active:scale-[0.99]"
                   >
                     <CaretDownIcon size={16} rotated={menuOpenId === item.id} />
                   </button>
@@ -417,7 +417,7 @@ export default function ResultPanel({
                     type="button"
                     data-testid={`download-${item.id}`}
                     onClick={() => onDownload(item)}
-                    className="inline-flex min-w-0 flex-1 items-center justify-center gap-1 rounded-[6px] bg-[var(--ed-accent)] px-2 py-2 text-xs font-semibold text-white transition hover:bg-[var(--ed-accent-hover)] active:scale-95"
+                    className="inline-flex min-w-0 flex-1 items-center justify-center gap-1 rounded-[6px] bg-[var(--ed-accent)] px-2 py-2 text-xs font-semibold text-white transition hover:bg-[#0257bf] active:scale-95"
                     title={t(locale, 'result.download')}
                   >
                     <DownloadIcon size={14} />
@@ -447,7 +447,7 @@ export default function ResultPanel({
             data-testid="download-zip"
             onClick={() => void handleDownloadAll()}
             disabled={zipping}
-            className="mt-6 w-full rounded-[6px] bg-[var(--ed-accent)] py-4 text-base font-bold text-white transition hover:bg-[var(--ed-accent-hover)] disabled:opacity-50"
+            className="mt-6 w-full rounded-[6px] bg-[var(--ed-btn-b,#007bff)] py-4 text-base font-bold text-white transition hover:bg-[#0257bf] disabled:opacity-50"
           >
             <span className="mr-2 inline-block align-middle">
               <DownloadIcon size={17} />
@@ -463,12 +463,13 @@ export default function ResultPanel({
             <p
               key={item.id}
               role="alert"
-              className="flex items-center gap-2 rounded-[4px] bg-[var(--ed-error-soft)] px-4 py-2.5 text-sm font-normal text-[var(--ed-error)]"
+              className="flex min-w-0 items-center gap-2 rounded-[4px] bg-[var(--ed-error-soft)] px-4 py-2.5 text-left text-sm font-normal text-[var(--ed-error)]"
             >
               <span className="shrink-0">
                 <WarningIcon size={17} />
               </span>
-              <span className="truncate font-medium">{item.file.name}:</span> {item.error}
+              <span className="min-w-0 shrink-0 truncate font-medium">{item.file.name}:</span>{' '}
+              <span className="min-w-0 break-words">{item.error}</span>
             </p>
           ))}
         </div>

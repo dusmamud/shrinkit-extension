@@ -61,6 +61,23 @@ const MODES: ResizeMode[] = ['stretch', 'crop', 'fit'];
 const PRESETS = ['preset-50', 'preset-800', 'preset-20kb', 'preset-last-used'] as const;
 type Preset = (typeof PRESETS)[number];
 
+/** Web-app upload-arrow mark (web Dropzone.tsx), scaled for the popup icon box. */
+function UploadMark(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 110 110" fill="none" aria-hidden="true" className="popup-upload-mark">
+      <path d="M55 80V32" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
+      <path
+        d="M34 53l21-21 21 21"
+        stroke="currentColor"
+        strokeWidth="7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M24 92h62" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function applyTheme(theme: string): void {
   const root = document.documentElement;
   if (theme === 'dark' || theme === 'light') {
@@ -715,11 +732,39 @@ export default function Popup(): React.JSX.Element {
           }
         }}
       >
-        <p>{t(locale, 'popup.dropzone_title')}</p>
-        <p className="popup-muted">{t(locale, 'popup.dropzone_hint', { max: MAX_FILES })}</p>
-        <p className="popup-muted">
-          {t(locale, 'popup.browse')} · {t(locale, 'popup.paste_hint')}
-        </p>
+        {/* Dashed border drawn as an SVG rect (web Dropzone style, scaled). */}
+        <svg className="popup-dropzone-border" aria-hidden="true">
+          <rect
+            x="2"
+            y="2"
+            rx="14"
+            fill="none"
+            stroke="var(--t-dash, #52a0ff)"
+            strokeWidth={dragging ? 3.5 : 2}
+            strokeDasharray="6 10"
+            strokeLinecap="round"
+            style={{ width: 'calc(100% - 4px)', height: 'calc(100% - 4px)' }}
+          />
+        </svg>
+
+        {processing && (
+          <div className="popup-processing">
+            <span className="dots">{t(locale, 'dropzone.processing')}</span>
+          </div>
+        )}
+
+        <div className="popup-dropzone-inner">
+          <div className="popup-dropzone-icon">
+            <UploadMark />
+          </div>
+          <p className="popup-dropzone-title">
+            {t(locale, 'dropzone.title_a')}{' '}
+            <span className="popup-browse">{t(locale, 'dropzone.browse')}</span>{' '}
+            <span className="popup-paste">{t(locale, 'dropzone.paste_hint')}</span>
+          </p>
+          <span className="popup-select-btn">{t(locale, 'dropzone.select')}</span>
+          <p className="popup-muted">{t(locale, 'popup.dropzone_hint', { max: MAX_FILES })}</p>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -745,7 +790,7 @@ export default function Popup(): React.JSX.Element {
         {files.map((item) => (
           <div key={item.id} className="popup-thumb">
             <div className="popup-thumb-img">
-              <img src={item.previewUrl} alt="" />
+              <img src={item.previewUrl} alt={item.file.name} loading="lazy" />
               <button
                 type="button"
                 onClick={() => removeFile(item.id)}
@@ -754,11 +799,17 @@ export default function Popup(): React.JSX.Element {
                 ×
               </button>
             </div>
-            <span className="popup-thumb-meta" title={item.file.name}>
-              {item.naturalWidth && item.naturalHeight
-                ? `${item.naturalWidth}×${item.naturalHeight}`
-                : formatBytes(item.file.size)}
-            </span>
+            <div className="popup-thumb-meta">
+              <span className="popup-thumb-name" title={item.file.name}>
+                {item.file.name}
+              </span>
+              <span className="popup-thumb-size">
+                {item.naturalWidth && item.naturalHeight
+                  ? `${item.naturalWidth}×${item.naturalHeight} · `
+                  : ''}
+                {formatBytes(item.file.size)}
+              </span>
+            </div>
           </div>
         ))}
       </div>
@@ -1013,7 +1064,7 @@ export default function Popup(): React.JSX.Element {
           })}
           <button
             type="button"
-            className="popup-secondary popup-download-all"
+            className="popup-download-all"
             disabled={zipping}
             onClick={() => void handleDownloadAll()}
           >

@@ -2,56 +2,11 @@
    Layout/spacing utilities come from Tailwind; colours go through these
    variables so light/dark switching is a single [data-theme] flip. */
 
-:root {
-  --ed-surface: #ffffff;
-  --ed-surface-2: #f6f8fb;
-  --ed-ink: #1a1a1a;
-  --ed-ink-2: #333333;
-  --ed-muted: #6b7280;
-  --ed-line: #e2e8f0;
-  --ed-input-bg: #ffffff;
-  --ed-input-line: #cbd5e1;
-  --ed-thumb-bg: #fafcff;
-  --ed-accent: #007bff;
-  --ed-accent-hover: #016df0;
-  --ed-error: #d33;
-  --ed-error-soft: #fdecea;
-  --ed-success: #15803d;
-  --ed-success-bg: #f0fdf4;
-  --ed-warning: #b45309;
-  --ed-dropzone: #f4f9ff;
-  --ed-dash: #9ec5ff;
-  --ed-pill-bg: #eef4ff;
-  --ed-pill-text: #1e40af;
-  --ed-pill-line: #c7d7fe;
-  --ed-checker-a: #f8fafc;
-  --ed-checker-b: #e2e8f0;
-}
-
+/* NOTE: --ed-* token values live ONLY in src/styles/global.css (html:root
+   aliases → --t-* web tokens). This file previously duplicated them with
+   stale pre-parity values (#007bff, #1a1a1a, …) — removed so there is one
+   source of truth. Do NOT re-add --ed-* literals here. */
 [data-theme='dark'] {
-  --ed-surface: #1a1d23;
-  --ed-surface-2: #23272f;
-  --ed-ink: #f1f5f9;
-  --ed-ink-2: #e2e8f0;
-  --ed-muted: #9ca3af;
-  --ed-line: #374151;
-  --ed-input-bg: #23272f;
-  --ed-input-line: #4b5563;
-  --ed-thumb-bg: #23272f;
-  --ed-accent: #0a84ff;
-  --ed-accent-hover: #2b9bff;
-  --ed-error: #f87171;
-  --ed-error-soft: #3a1d1d;
-  --ed-success: #4ade80;
-  --ed-success-bg: #14251a;
-  --ed-warning: #fbbf24;
-  --ed-dropzone: #1c2433;
-  --ed-dash: #3b82f6;
-  --ed-pill-bg: #1e293b;
-  --ed-pill-text: #bfdbfe;
-  --ed-pill-line: #334155;
-  --ed-checker-a: #23272f;
-  --ed-checker-b: #2e343f;
   color-scheme: dark;
 }
 
@@ -123,26 +78,41 @@ body {
     Roboto,
     sans-serif;
   -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 .ed-header {
   position: sticky;
   top: 0;
   z-index: 40;
-  border-bottom: 1px solid var(--ed-line);
-  background-color: var(--ed-surface);
+  /* Web header (Header.astro): plain page background, no bottom border. */
+  background-color: var(--t-page, var(--ed-surface));
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .ed-header-inner {
   margin: 0 auto;
   width: 100%;
-  max-width: 1100px;
+  /* Web header inner (Header.astro): max-w-[1075px], px-4 py-4. */
+  max-width: 1075px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   column-gap: 16px;
   row-gap: 8px;
-  padding: 12px 16px;
+  padding: 16px;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Flex children must be allowed to shrink/wrap — never force overflow. */
+.ed-header-inner > * {
+  min-width: 0;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -153,14 +123,18 @@ body {
   text-decoration: none;
   color: var(--ed-ink);
   flex: none;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .ed-brand-name {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  /* Web site name (Header.astro): text-[1.35rem] font-medium tracking-tight. */
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
   line-height: 1.25;
   white-space: nowrap;
+  color: var(--t-ink, var(--ed-ink));
 }
 
 /* Logo size safety: hard 32px cap in plain CSS, on top of the
@@ -179,48 +153,70 @@ body {
 .ed-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
   order: 3;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
+/* Tool tabs styled like the WEB nav links (Header.astro) — plain text
+   links with divider separators, NOT generic pills. Active tab gets the
+   accent colour + underline; inactive tabs get accent on hover. */
 .ed-tab {
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.8px;
   line-height: 1.4;
   background: transparent;
   border: 0;
+  border-radius: 4px;
   cursor: pointer;
-  color: var(--ed-ink-2);
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
+  color: var(--t-ink, var(--ed-ink));
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  transition: color 0.15s ease;
 }
 
 .ed-tab:hover {
-  background-color: var(--ed-surface-2);
-  color: var(--ed-accent);
+  color: var(--t-accent, var(--ed-accent));
 }
 
 .ed-tab[aria-selected='true'],
 .ed-tab-active {
-  background-color: var(--ed-accent);
-  color: #fff;
+  color: var(--t-accent, var(--ed-accent));
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 
 .ed-tab[aria-selected='true']:hover {
-  color: #fff;
+  color: var(--t-accent, var(--ed-accent));
+}
+
+/* Web nav divider (Header.astro): mx-2.5 xl:mx-4, h-4 w-px, bg-tdivider. */
+.ed-tab-sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 10px;
+  background-color: var(--t-divider, var(--ed-line));
+  flex: none;
 }
 
 .ed-header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   order: 2;
   margin-left: auto;
   flex: none;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .ed-settings-btn {
@@ -228,22 +224,23 @@ body {
   align-items: center;
   gap: 6px;
   border-radius: 6px;
-  border: 1px solid var(--ed-input-line);
+  border: 1px solid var(--t-divider, var(--ed-input-line));
   padding: 8px 10px;
   font-size: 14px;
   font-weight: 500;
   line-height: 1.4;
-  color: var(--ed-ink-2);
+  color: var(--t-ink-2, var(--ed-ink-2));
   background: transparent;
   cursor: pointer;
+  white-space: nowrap;
   transition:
     border-color 0.15s ease,
     color 0.15s ease;
 }
 
 .ed-settings-btn:hover {
-  border-color: var(--ed-accent);
-  color: var(--ed-accent);
+  border-color: var(--t-accent, var(--ed-accent));
+  color: var(--t-accent, var(--ed-accent));
 }
 
 .ed-settings-label {
@@ -252,14 +249,20 @@ body {
 
 .ed-main {
   padding: 24px 0 32px;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .ed-main-inner {
   margin: 0 auto;
   width: 100%;
-  max-width: 1100px;
+  /* Web tool wrapper (ShrinkItApp.tsx): max-w-[960px] px-4. The 940px
+     dropzone (worker 3) and 650px settings area (worker 4) both fit
+     inside this — same geometry as the web app. */
+  max-width: 960px;
   padding: 0 16px;
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .ed-banner-error {
@@ -348,6 +351,69 @@ body {
 @media (min-width: 768px) {
   .ed-settings-label {
     display: inline;
+  }
+}
+
+/* Web nav at xl (Header.astro): 14px, tracking 1.17px, separators mx-4. */
+@media (min-width: 1280px) {
+  .ed-tab {
+    font-size: 14px;
+    letter-spacing: 1.17px;
+  }
+
+  .ed-tab-sep {
+    margin: 0 16px;
+  }
+}
+
+/* Narrow widths (web breakpoints 600/480/400/360): the header stacks
+   brand / controls / tabs, tabs wrap to a second line, type and
+   separators shrink — no horizontal overflow, no clipped buttons. */
+@media (max-width: 600px) {
+  .ed-header-inner {
+    row-gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ed-tab {
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    padding: 8px 2px;
+  }
+
+  .ed-tab-sep {
+    margin: 0 6px;
+  }
+
+  .ed-brand-name {
+    font-size: 1.15rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .ed-brand-name {
+    font-size: 1.05rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .ed-header-inner {
+    padding: 12px 16px;
+    column-gap: 8px;
+  }
+
+  .ed-brand-name {
+    font-size: 1rem;
+  }
+
+  .ed-tab {
+    font-size: 11.5px;
+    letter-spacing: 0.2px;
+  }
+
+  .ed-tab-sep {
+    margin: 0 4px;
   }
 }
 
