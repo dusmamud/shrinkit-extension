@@ -202,7 +202,7 @@ export default function SocialTool({ locale }: SocialToolProps) {
           <button
             type="button"
             onClick={() => setFitMode('crop-fill')}
-            className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition ${
+            className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
               fitMode === 'crop-fill'
                 ? 'bg-taccent text-white shadow-sm'
                 : 'text-tmuted hover:text-tink'
@@ -213,7 +213,7 @@ export default function SocialTool({ locale }: SocialToolProps) {
           <button
             type="button"
             onClick={() => setFitMode('fit-pad')}
-            className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition ${
+            className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
               fitMode === 'fit-pad'
                 ? 'bg-taccent text-white shadow-sm'
                 : 'text-tmuted hover:text-tink'

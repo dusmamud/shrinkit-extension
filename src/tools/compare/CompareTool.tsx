@@ -263,7 +263,7 @@ export default function CompareTool({ locale }: CompareToolProps) {
           <button
             type="button"
             onClick={() => setMode('generate')}
-            className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition ${
+            className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
               mode === 'generate'
                 ? 'bg-taccent text-white shadow-sm'
                 : 'text-tmuted hover:text-tink'
@@ -274,7 +274,7 @@ export default function CompareTool({ locale }: CompareToolProps) {
           <button
             type="button"
             onClick={() => setMode('twoFiles')}
-            className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition ${
+            className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
               mode === 'twoFiles'
                 ? 'bg-taccent text-white shadow-sm'
                 : 'text-tmuted hover:text-tink'
@@ -402,7 +402,7 @@ export default function CompareTool({ locale }: CompareToolProps) {
             </div>
             {mode === 'generate' && (
               <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
-                <span className="text-xs font-medium break-words text-tmuted">
+                <span className="text-xs font-medium break-words whitespace-nowrap text-tmuted">
                   {t(locale, 'tools.compare.qualityLabel')}
                 </span>
                 <input

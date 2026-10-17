@@ -302,7 +302,7 @@ function CustomSelect<T extends string = string>({
           role="listbox"
           tabIndex={-1}
           aria-label={ariaLabel}
-          className={`ed-menu-in absolute z-50 mt-1.5 max-w-[240px] min-w-full w-max overflow-hidden rounded-[10px] border border-[var(--ed-line-soft,#f1f5f9)] bg-[var(--ed-surface)] py-1.5 shadow-xl transition-all duration-150 ${
+          className={`ed-menu-in absolute z-50 mt-1.5 max-w-[min(240px,calc(100vw-2rem))] min-w-full w-max overflow-hidden rounded-[10px] border border-[var(--ed-line-soft,#f1f5f9)] bg-[var(--ed-surface)] py-1.5 shadow-xl transition-all duration-150 ${
             align === 'right' ? 'right-0' : 'left-0'
           }`}
         >
@@ -549,8 +549,8 @@ export default function SettingsPanel({
               narrow (320/360/390/400) so the row can never overlap. The
               bracket stays with the inputs; only the unit select drops to
               its own centred row on narrow. */}
-          <div className="flex flex-col items-center justify-center gap-3 min-[480px]:flex-row min-[480px]:gap-0">
-            <div className="flex items-center justify-center">
+          <div className="flex max-w-full flex-col items-center justify-center gap-3 min-[480px]:flex-row min-[480px]:gap-0">
+            <div className="flex min-w-0 max-w-full items-center justify-center">
               {/* Labels Column */}
               <div className="flex flex-col gap-4 pr-2.5 text-right sm:pr-4">
                 <div className="flex h-[50px] items-center justify-end">
@@ -712,12 +712,12 @@ export default function SettingsPanel({
           {(widthError || heightError) && (
             <div
               role="alert"
-              className="mt-3 flex items-center justify-center gap-1.5 text-xs font-medium text-[var(--ed-error)]"
+              className="mt-3 flex flex-wrap items-center justify-center gap-1.5 text-xs font-medium text-[var(--ed-error)]"
             >
               <span className="shrink-0">
                 <WarningIcon size={15} />
               </span>
-              <span>{widthError || heightError}</span>
+              <span className="min-w-0 break-words">{widthError || heightError}</span>
             </div>
           )}
 
@@ -727,7 +727,7 @@ export default function SettingsPanel({
               data-tip={t(locale, 'settings.resolution_tip')}
               className="mt-4 flex flex-col items-center justify-center"
             >
-              <div className="flex items-center justify-center">
+              <div className="flex min-w-0 max-w-full items-center justify-center">
                 <div className="flex h-[50px] items-center justify-end pr-2.5 sm:pr-4">
                   <label
                     htmlFor="set-dpi"
@@ -769,12 +769,12 @@ export default function SettingsPanel({
               {dpiError && (
                 <div
                   role="alert"
-                  className="mt-2 flex items-center justify-center gap-1.5 text-xs font-medium text-[var(--ed-error)]"
+                  className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-xs font-medium text-[var(--ed-error)]"
                 >
                   <span className="shrink-0">
                     <WarningIcon size={14} />
                   </span>
-                  <span>{dpiError}</span>
+                  <span className="min-w-0 break-words">{dpiError}</span>
                 </div>
               )}
             </div>
@@ -811,7 +811,7 @@ export default function SettingsPanel({
                   ].join(' ')}
                 >
                   <ModeDiagram mode={m} />
-                  <span className="flex items-center gap-1.5 text-sm font-normal text-[var(--ed-ink)]">
+                  <span className="flex min-w-0 items-center gap-1.5 text-sm font-normal whitespace-nowrap text-[var(--ed-ink)]">
                     <span
                       className={[
                         'inline-block h-3.5 w-3.5 rounded-full border-2',
@@ -894,12 +894,12 @@ export default function SettingsPanel({
               {qualityError && (
                 <div
                   role="alert"
-                  className="mt-1 flex items-center gap-1 text-xs font-medium text-[var(--ed-error)]"
+                  className="mt-1 flex flex-wrap items-center gap-1 text-xs font-medium text-[var(--ed-error)]"
                 >
                   <span className="shrink-0">
                     <WarningIcon size={14} />
                   </span>
-                  <span>{qualityError}</span>
+                  <span className="min-w-0 break-words">{qualityError}</span>
                 </div>
               )}
             </div>
@@ -971,16 +971,16 @@ export default function SettingsPanel({
             {validationError && (
               <p
                 role="alert"
-                className="mt-2 flex items-center justify-center gap-1 text-xs font-medium text-[var(--ed-error)]"
+                className="mt-2 flex flex-wrap items-center justify-center gap-1 text-xs font-medium text-[var(--ed-error)]"
               >
                 <span className="shrink-0">
                   <WarningIcon size={14} />
                 </span>
-                <span>{validationError}</span>
+                <span className="min-w-0 break-words">{validationError}</span>
               </p>
             )}
 
-            <div className="mt-3 flex justify-center gap-3">
+            <div className="mt-3 flex flex-wrap justify-center gap-3">
               {processing && onAbort && (
                 <button
                   type="button"
@@ -1014,7 +1014,7 @@ export default function SettingsPanel({
               onChange={(e) => onChange({ preserveExif: e.target.checked })}
               className="h-3.5 w-3.5 accent-[var(--ed-accent)]"
             />
-            <span>{t(locale, 'settings.preserve_exif')}</span>
+            <span className="min-w-0 break-words">{t(locale, 'settings.preserve_exif')}</span>
           </label>
         </div>
       </div>

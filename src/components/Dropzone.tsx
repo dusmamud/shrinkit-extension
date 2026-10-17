@@ -199,7 +199,7 @@ export default function Dropzone({
         >
           <div className="mb-3 flex min-w-0 max-w-full flex-wrap items-center justify-center gap-2">
             <span
-              className={`max-w-full rounded-full border px-3 py-1 text-xs font-semibold ${
+              className={`max-w-full rounded-full border px-3 py-1 text-xs font-semibold break-words text-center ${
                 files.length >= maxFiles
                   ? 'border-[var(--ed-error)] bg-[var(--ed-error-soft)] text-[var(--ed-error)]'
                   : 'border-[var(--ed-line)] bg-[var(--ed-surface)] text-[var(--ed-ink-2)] shadow-sm'

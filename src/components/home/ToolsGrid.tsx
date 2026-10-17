@@ -93,7 +93,7 @@ export default function ToolsGrid({ locale }: ToolsGridProps) {
 
           <a
             href="#/tools"
-            className="group inline-flex shrink-0 items-center gap-2 self-start text-sm font-semibold text-taccent hover:underline md:self-end"
+            className="group inline-flex shrink-0 items-center gap-2 self-start text-sm font-semibold whitespace-nowrap text-taccent hover:underline md:self-end"
           >
             <span>{t(locale, 'home.tools.all_tools')}</span>
             <svg
@@ -136,11 +136,11 @@ export default function ToolsGrid({ locale }: ToolsGridProps) {
                 </p>
               </div>
 
-              <div className="mt-5 flex items-center justify-between border-t border-tborderfaint/60 pt-4 text-xs font-bold text-taccent">
-                <span>{t(locale, 'home.tools.open_tool')}</span>
+              <div className="mt-5 flex min-w-0 flex-wrap items-center justify-between gap-2 border-t border-tborderfaint/60 pt-4 text-xs font-bold text-taccent">
+                <span className="whitespace-nowrap">{t(locale, 'home.tools.open_tool')}</span>
                 <span
                   aria-hidden="true"
-                  className="transition-transform group-hover:translate-x-1.5"
+                  className="shrink-0 transition-transform group-hover:translate-x-1.5"
                 >
                   →
                 </span>

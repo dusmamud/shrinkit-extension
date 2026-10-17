@@ -519,12 +519,6 @@ nav {
     padding: 0.5rem 0.875rem;
   }
 }
-@media screen and (max-width: 480px) {
-  /* Web's 480px breakpoint: long unbroken strings may wrap. */
-  body {
-    overflow-wrap: break-word;
-  }
-}
 @media screen and (max-width: 400px) {
   .card {
     padding: 0.625rem;
@@ -616,17 +610,9 @@ svg[width][height] {
   overflow-x: clip;
 }
 
-/* Long unbroken strings (filenames, URLs, error text) wrap instead of
-   forcing overflow. overflow-wrap only acts when a line would overflow,
-   so normal text is unaffected. */
-p,
-li,
-h1,
-h2,
-h3,
-a {
-  overflow-wrap: break-word;
-}
+/* NOTE: no global overflow-wrap here — UI text must never break mid-word.
+   Long unbroken strings are handled only by scoped rules on the specific
+   element that displays them (e.g. a filename). */
 
 /* Form controls can always shrink to their container. (The existing
    max-width: 100% guard above only kicks in at 600px and under; this one

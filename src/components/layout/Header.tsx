@@ -40,11 +40,10 @@ interface NavLink {
   labelKey: string;
 }
 
-/** Primary nav, in display order. All navigation is plain hash hrefs. */
+/** Primary nav, in display order — exactly the web app's 4 links. All navigation is plain hash hrefs. */
 const NAV_LINKS: NavLink[] = [
-  { href: '#/', labelKey: 'nav.resize' },
-  { href: '#/tools', labelKey: 'nav.tools' },
   { href: '#/#how-it-works', labelKey: 'nav.how' },
+  { href: '#/tools', labelKey: 'nav.tools' },
   { href: '#/privacy', labelKey: 'nav.privacy' },
   { href: '#/contact', labelKey: 'nav.contact' },
 ];
@@ -57,9 +56,10 @@ function routeForHref(href: string): string {
 
 /**
  * Site header — faithful React port of the web app's Header.astro.
- * Inner bar: max-w 1075px, px-4, py-4. Brand: 34px icon (pinned) +
- * "ShrinkIt" wordmark. Desktop nav (md+) with 1px dividers between links,
- * Language + Theme switchers, and the "Resize Image" CTA. Below md the
+ * Inner bar: max-w 1075px, px-4, py-4, gap-x-4, flex-nowrap — children never wrap.
+ * Brand: 34px icon (pinned) +
+ * "ShrinkIt" wordmark. Desktop nav (lg+) with 1px dividers between links,
+ * Language + Theme switchers, and the "Resize Image" CTA. Below lg the
  * nav collapses to a hamburger that opens a stacked panel.
  */
 export default function Header({
@@ -102,10 +102,10 @@ export default function Header({
 
   return (
     <header className="border-b border-tdivider/50 bg-tpage">
-      <div className="mx-auto flex max-w-[1075px] items-center justify-between px-4 py-4">
+      <div className="mx-auto flex max-w-[1075px] flex-nowrap items-center justify-between gap-x-4 px-4 py-4">
         <a
           href="#/"
-          className="flex items-center gap-2.5 transition-transform hover:scale-[1.02] active:scale-95"
+          className="flex shrink-0 items-center gap-2.5 transition-transform hover:scale-[1.02] active:scale-95"
           aria-label={t(locale, 'site.name')}
         >
           <img
@@ -117,24 +117,30 @@ export default function Header({
             className="shrink-0 object-contain"
             draggable={false}
           />
-          <span className="text-[1.35rem] font-medium tracking-tight text-tink">
+          <span className="whitespace-nowrap text-[1.35rem] font-medium tracking-tight text-tink">
             {t(locale, 'site.name')}
           </span>
         </a>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center md:flex" aria-label={t(locale, 'nav.primary')}>
+        <nav
+          className="hidden flex-nowrap items-center lg:flex"
+          aria-label={t(locale, 'nav.primary')}
+        >
           {NAV_LINKS.map((link, index) => {
             const active = routeForHref(link.href) === currentRoute;
             return (
-              <span key={link.href} className="flex items-center">
+              <span key={link.href} className="flex shrink-0 items-center">
                 {index > 0 && (
-                  <span className="mx-2.5 h-4 w-px bg-tdivider xl:mx-4" aria-hidden="true" />
+                  <span
+                    className="mx-2.5 h-4 w-px shrink-0 bg-tdivider xl:mx-4"
+                    aria-hidden="true"
+                  />
                 )}
                 <a
                   href={link.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`text-[13px] tracking-[0.8px] transition-colors hover:text-taccent xl:text-[14px] xl:tracking-[1.17px] ${
+                  className={`whitespace-nowrap text-[13px] tracking-[0.8px] transition-colors hover:text-taccent xl:text-[14px] xl:tracking-[1.17px] ${
                     active ? 'font-medium text-taccent' : 'font-normal text-tink'
                   }`}
                 >
@@ -145,18 +151,18 @@ export default function Header({
           })}
           <a
             href="#/"
-            className="ml-4 inline-flex h-[38px] items-center rounded-[6px] bg-tbtnb px-4 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#0257bf] hover:shadow active:scale-95 xl:ml-6 xl:h-[42px] xl:px-6 xl:text-[14px]"
+            className="ml-4 inline-flex h-[38px] shrink-0 items-center whitespace-nowrap rounded-[6px] bg-tbtnb px-4 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#0257bf] hover:shadow active:scale-95 xl:ml-6 xl:h-[42px] xl:px-6 xl:text-[14px]"
           >
             {t(locale, 'nav.resize_image')}
           </a>
-          <span className="ml-3 inline-flex items-center gap-2 xl:ml-4">
+          <span className="ml-3 inline-flex shrink-0 items-center gap-2 xl:ml-4">
             <ThemeSwitcher locale={locale} theme={theme} onChange={onThemeChange} />
             <LanguageSwitcher locale={locale} onChange={onLocaleChange} />
           </span>
         </nav>
 
         {/* Mobile hamburger — switchers live inside the panel only */}
-        <div className="md:hidden">
+        <div className="shrink-0 lg:hidden">
           <button
             type="button"
             ref={menuButtonRef}
@@ -193,7 +199,7 @@ export default function Header({
 
       {/* Mobile stacked nav panel */}
       {menuOpen && (
-        <div id="mobile-menu" className="border-t border-tdivider bg-tpage md:hidden">
+        <div id="mobile-menu" className="border-t border-tdivider bg-tpage lg:hidden">
           <nav
             className="mx-auto flex max-w-[1075px] flex-col px-4 py-4"
             aria-label={t(locale, 'nav.mobile')}
@@ -206,7 +212,7 @@ export default function Header({
                   href={link.href}
                   onClick={closeMenu}
                   aria-current={active ? 'page' : undefined}
-                  className={`flex min-h-[44px] items-center rounded-md px-2 text-base tracking-[1.17px] transition-colors hover:bg-thoverbg hover:text-taccent ${
+                  className={`flex min-h-[44px] items-center whitespace-nowrap rounded-md px-2 text-base tracking-[1.17px] transition-colors hover:bg-thoverbg hover:text-taccent ${
                     active ? 'font-medium text-taccent' : 'font-normal text-tink'
                   }`}
                 >
@@ -217,7 +223,7 @@ export default function Header({
             <a
               href="#/"
               onClick={closeMenu}
-              className="mt-2 inline-flex h-[48px] items-center justify-center rounded-[6px] bg-tbtnb px-8 text-base font-bold text-white transition-colors hover:bg-[#0257bf]"
+              className="mt-2 inline-flex h-[48px] items-center justify-center whitespace-nowrap rounded-[6px] bg-tbtnb px-8 text-base font-bold text-white transition-colors hover:bg-[#0257bf]"
             >
               {t(locale, 'nav.resize_image')}
             </a>

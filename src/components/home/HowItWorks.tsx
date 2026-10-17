@@ -24,7 +24,7 @@ export default function HowItWorks({ locale }: HowItWorksProps) {
     >
       <div className="mx-auto box-border w-full min-w-0 max-w-6xl px-4 sm:px-6">
         <div className="mx-auto mb-12 max-w-2xl text-center">
-          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-taccent/20 bg-taccent/10 px-3 py-1 text-xs font-semibold text-taccent">
+          <div className="mb-3 inline-flex max-w-full items-center gap-1.5 rounded-full border border-taccent/20 bg-taccent/10 px-3 py-1 text-xs font-semibold text-taccent">
             <svg
               className="h-3.5 w-3.5"
               viewBox="0 0 24 24"

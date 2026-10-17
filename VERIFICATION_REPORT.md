@@ -392,3 +392,119 @@ lacks `aria-activedescendant`) — needs a screen-reader check.
 - `#/resize` shows the copyright-only footer; all other pages show the full footer.
 - ES/PT strings: machine-translated from EN/web copy — native-speaker review still needed before Store submission.
 - Screen-reader pass for F11 (combobox `aria-activedescendant`).
+
+---
+
+## Header-wrap fix (2026-10-17)
+
+> Scope: this worker owned docs only — this section, plus the targeted
+> corrections in `docs/ROUTING.md` and `docs/RESPONSIVE.md` listed at the
+> bottom. It edited no code, no tests, no CSS, and no workflow files, and
+> ran no gates. Gate results (including the new header regression tests)
+> are the coordinator's final run, not this section's. Everything below is
+> **code evidence** (committed `HEAD` vs the working tree + `git diff`),
+> not a browser result.
+>
+> **Timing (explicit):** these docs were written **after** the other
+> workers' header changes landed in the working tree — not before. The
+> sequence was: watch the working tree until the header diff stabilised
+> (identical file checksums 60s apart, 16 modified files + 1 untracked
+> test), then read the final `Header.tsx` / switcher / CSS diffs, then
+> write. At the time of writing the header fix was **uncommitted**
+> (working tree only, `HEAD` still `1132c49`); no commit and no push by
+> this worker.
+
+### What the user saw (screenshots, the bug)
+
+At tablet widths the header broke words mid-word: **"Shrink / It"**,
+**"Tool / s"**, **"Privac / y"**, **"Conta / ct"** — nav + CTA +
+dropdowns crammed and wrapping. The screenshots are the user's evidence;
+no screenshot was taken in this environment (see "Honest note" below).
+
+### BEFORE — committed `HEAD` (`git show HEAD:src/components/layout/Header.tsx`)
+
+| Item                    | BEFORE value (HEAD)                                                                                                                                                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Desktop-nav breakpoint  | `md:` — desktop nav `hidden items-center md:flex` (visible from **768px**); hamburger wrapper + mobile panel `md:hidden`                                                                                                         |
+| Nav links (`NAV_LINKS`) | **5** — `#/` (`nav.resize`), `#/tools` (`nav.tools`), `#/#how-it-works` (`nav.how`), `#/privacy` (`nav.privacy`), `#/contact` (`nav.contact`)                                                                                    |
+| Duplicate Resize        | The `#/` `nav.resize` link duplicated the "Resize Image" CTA (separate `href="#/"` button) — per the regression test's comment, ~120px wider than the web header                                                                 |
+| Wrapping protection     | **None** on the text: brand wordmark `<span>`, nav `<a>`s, and CTA had no `whitespace-nowrap`; brand link and CTA had no `shrink-0` (only the logo `<img>` had `shrink-0`). Inner bar was plain `flex` (wrapping allowed)        |
+| Global break rules      | `src/styles/global.css`: `body { overflow-wrap: break-word }` at ≤480px **and** `p, li, h1, h2, h3, a { overflow-wrap: break-word }` — global rules that let words split. Popup CSS carried `overflow-wrap: anywhere` on 9 rules |
+
+Why it broke at 768–1024px: the web header waits until `lg:` (1024px)
+before showing the full nav, but the extension showed all 5 links + CTA +
+2 switchers from 768px — ~256px less room for ~120px more content, with
+nothing stopping words from splitting. Squeezing broke the words.
+
+### AFTER — working tree (`Header.tsx` + switchers + CSS, as read after stabilisation)
+
+| Item                    | AFTER value (worktree)                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Desktop-nav breakpoint  | `lg:` — desktop nav `hidden flex-nowrap items-center lg:flex` (visible from **1024px**); hamburger wrapper `shrink-0 lg:hidden`; mobile panel `lg:hidden`. `grep` confirms **zero** `md:flex` / `md:hidden` in `Header.tsx`                                                                                                                                                                                                                                                         |
+| Nav links (`NAV_LINKS`) | **4** — exactly the web app's links: `#/#how-it-works` (`nav.how`), `#/tools` (`nav.tools`), `#/privacy` (`nav.privacy`), `#/contact` (`nav.contact`). No `#/` entry, no `nav.resize` key                                                                                                                                                                                                                                                                                           |
+| Duplicate Resize        | Gone as a nav link. "Resize Image" exists only as the CTA (`href="#/"`, `nav.resize_image`) — the single Resize entry point, matching the web header (CTA + logo link home)                                                                                                                                                                                                                                                                                                         |
+| Wrapping protection     | Inner bar `flex-nowrap … gap-x-4`; brand link `shrink-0`, wordmark `whitespace-nowrap`; each nav-link wrapper `shrink-0`, dividers `shrink-0`, nav links `whitespace-nowrap`; CTA `shrink-0` + `whitespace-nowrap`; switcher wrapper `shrink-0`. Mobile-panel links + CTA also `whitespace-nowrap`                                                                                                                                                                                  |
+| Switchers               | `LanguageSwitcher` + `ThemeSwitcher`: wrapper / label / `<select>` all `whitespace-nowrap` + `shrink-0`, `h-11` (44px touch target), `lg:px-2` (padding tightens at the squeeze width)                                                                                                                                                                                                                                                                                              |
+| Global break rules      | **Removed.** `global.css`: the `body` ≤480px `break-word` rule and the `p, li, h1, h2, h3, a` `break-word` rule are both deleted, replaced by a NOTE ("no global overflow-wrap here — UI text must never break mid-word"). Popup CSS: `overflow-wrap: anywhere` removed from all 9 rules; the single remaining break rule is a **scoped** exception — `.popup-thumb-name { overflow-wrap: break-word }` for long filenames only, with a comment saying it never applies to UI prose |
+| Regression tests        | New untracked `tests/unit/header-responsive.test.ts`: pins `lg:flex` / `lg:hidden`, zero `md:flex` / `md:hidden`, exactly the 4 web hrefs, `whitespace-nowrap` + `shrink-0` on brand / nav links / CTA, no `break-all` / `overflow-wrap: anywhere` on any global selector in the 4 CSS files, 13 routes unchanged                                                                                                                                                                   |
+
+### Word-break audit (this worker's own `grep`, not just the test)
+
+- `Header.tsx`: **zero** `break-*` / `overflow-wrap` / `word-break` rules.
+- All 4 CSS files (`src/styles/global.css`, `entrypoints/editor/style.css`,
+  `entrypoints/options/style.css`, `entrypoints/popup/style.css`): **zero**
+  `break-all`, **zero** `overflow-wrap: anywhere`. One scoped
+  `overflow-wrap: break-word` remains (`.popup-thumb-name`, filenames
+  only) — it cannot split header words.
+- No rule anywhere can split a header word mid-word anymore. What the
+  code does **not** prove is whether the full single-row content fits at
+  exactly 1024px (see the 1024px row below).
+
+### Per-width table — header state + overflow verdict from CODE evidence only
+
+"Code evidence" means: what the classes + `NAV_LINKS` + CSS in the
+working tree force to happen. It is **not** a rendering measurement —
+font metrics, translated label lengths (EN/ES/PT), and real layout can
+only be measured in a real browser.
+
+| Viewport | Header state (code)                                                                                                                                                                                              | Overflow verdict (CODE evidence only)                                                                                                                                                                                                                                                                                                                                                     |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 320px    | Hamburger (`lg:hidden` shows it; desktop nav `hidden`). Brand + hamburger only. Mobile panel, when opened, stacks links vertically                                                                               | No squeeze: desktop nav hidden; brand wordmark `nowrap` + `shrink-0`, hamburger `shrink-0`. Fit of brand + hamburger in 288px inner width not measured — code evidence only                                                                                                                                                                                                               |
+| 360px    | Hamburger. Same as 320px                                                                                                                                                                                         | Same as 320px — no wrap/break mechanism in code; fit not measured                                                                                                                                                                                                                                                                                                                         |
+| 390px    | Hamburger. Same as 320px                                                                                                                                                                                         | Same as 320px — no wrap/break mechanism in code; fit not measured. **390px is a must-check on the laptop** (see Honest note)                                                                                                                                                                                                                                                              |
+| 480px    | Hamburger. Same as 320px                                                                                                                                                                                         | Same as 320px — no wrap/break mechanism in code; fit not measured                                                                                                                                                                                                                                                                                                                         |
+| 768px    | **Hamburger** (changed — was desktop nav before). The 768–1024px squeeze zone is gone: the full nav never renders here now                                                                                       | No squeeze by construction: desktop nav `hidden` below `lg:`. This is the width band the screenshots proved broken before                                                                                                                                                                                                                                                                 |
+| 1024px   | **Single-row desktop nav** (`lg:flex` first applies; Tailwind `lg:` = min-width 1024px). Tightest single-row width: inner bar = 1024 − 32px padding = 992px for brand + 4 links + 3 dividers + CTA + 2 switchers | **No mid-word break by construction** (`nowrap` + `shrink-0` + `flex-nowrap` everywhere). **Total-width fit NOT proven by code alone**: whether the intrinsic widths of all single-row items fit 992px depends on rendered font metrics + locale label lengths (ES/PT labels are longer) — only a real-browser measurement can prove it. **1024px is the must-check width on the laptop** |
+| 1075px   | Single-row desktop nav. Inner bar at its 1075px cap (minus 32px padding = 1043px usable)                                                                                                                         | Same as 1024px, with 51px more room — no mid-word break by construction; total fit not measured in code                                                                                                                                                                                                                                                                                   |
+| 1280px   | Single-row desktop nav. Inner bar stays capped at 1075px, centred                                                                                                                                                | Same as 1075px — no mid-word break by construction; total fit not measured in code                                                                                                                                                                                                                                                                                                        |
+| 1440px   | Single-row desktop nav. Inner bar stays capped at 1075px, centred; no full-width stretch                                                                                                                         | Same as 1075px — no mid-word break by construction; total fit not measured in code                                                                                                                                                                                                                                                                                                        |
+
+Popup note (unchanged by this fix): the popup is a fixed 400px Chrome
+popup; it does not shrink to page-viewport widths and is not part of
+this table.
+
+### Honest note — no real-browser screenshots taken in this environment
+
+- **No screenshots were taken here.** This environment has no live
+  browser / real Chrome run; every verdict above is read from source
+  (`Header.tsx`, switchers, CSS, `git diff`). Code can prove that no
+  rule _can_ split a word, but it cannot prove how the header _looks_.
+- **Only the user's laptop + real Chrome can prove rendering**, at
+  minimum at **1024px** (tightest single-row width — does everything
+  actually fit on one row, in EN _and_ ES _and_ PT?) and **390px**
+  (hamburger + brand, mobile panel open + closed, no horizontal
+  scrollbar). 768px is also worth one look to confirm the hamburger now
+  shows where the screenshots showed the broken nav.
+- Also still laptop-only: translated label lengths (ES/PT switcher +
+  nav labels are longer than EN — the 1024px fit question is really a
+  per-locale question), and the regression tests' pass/fail result
+  (coordinator's final run, not this worker's).
+
+### Docs updated (after the workers' changes, not before)
+
+| Doc                  | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/ROUTING.md`    | Header bullet corrected: old 5-link nav (Resize, Tools, How it works, Privacy, Contact) → **4 links** (How it works, Tools, Privacy, Contact) + desktop nav at `lg:` + `nowrap`/`shrink-0` + CTA as the single Resize entry point. No other ROUTING.md content touched                                                                                                                                                                                              |
+| `docs/RESPONSIVE.md` | Breakpoint table corrected: added a **1024px** row (desktop nav appears at `lg:` — tightest single-row width); 960px row "Compressing" → **hamburger** (desktop nav hidden below `lg:`); 768px row "below `md`" → **below `lg:`**; How-to-test step 2 width list gained **1024**; step 3 "hamburger (below 768px)" → **(below 1024px)**. Hero `md:` / dropzone `sm:`/`md:` mentions untouched — those are hero/dropzone Tailwind classes, not the header breakpoint |
+
+**Not done (per task):** no push; no edits outside `VERIFICATION_REPORT.md`, `docs/ROUTING.md`, `docs/RESPONSIVE.md`; no gates run by this worker.

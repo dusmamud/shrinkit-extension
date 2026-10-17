@@ -142,9 +142,14 @@ The Header and Footer are shared components rendered on every editor
 page (ported from the web app's `Header` / `Footer`, Astro → React):
 
 - **Header:** logo (pinned 34px, web parity) + site name, primary nav
-  — Resize (`#/`), Tools (`#/tools`), How it works
-  (`#/#how-it-works`, anchor on Home), Privacy (`#/privacy`), Contact
-  (`#/contact`) — language switcher, theme switcher. About is reached
+  — How it works (`#/#how-it-works`, anchor on Home), Tools (`#/tools`),
+  Privacy (`#/privacy`), Contact (`#/contact`) — exactly the web app's
+  4 links (no separate Resize nav link: "Resize Image" is the CTA, the
+  single Resize entry point, plus the logo linking home). Desktop nav
+  shows at `lg:` (≥1024px); below that a hamburger opens a stacked
+  panel. Brand, nav links, CTA, and switchers are `whitespace-nowrap` +
+  `shrink-0`, so header text never breaks mid-word. Language switcher,
+  theme switcher. About is reached
   via the Footer, not the Header nav. The nav marks the current route
   active. Header inner width 1075px.
 - **Footer:** product / tools / legal link columns mirroring the web

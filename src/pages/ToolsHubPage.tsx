@@ -79,9 +79,12 @@ export function ToolsHubPage({ locale }: ToolsHubPageProps) {
                 {t(locale, tool.descKey)}
               </p>
             </div>
-            <div className="mt-6 flex items-center gap-1 text-xs font-bold break-words text-taccent">
-              <span>{t(locale, 'tools.hub.openTool')}</span>
-              <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
+            <div className="mt-6 flex flex-wrap items-center gap-1 text-xs font-bold break-words text-taccent">
+              <span className="whitespace-nowrap">{t(locale, 'tools.hub.openTool')}</span>
+              <span
+                aria-hidden="true"
+                className="shrink-0 transition-transform group-hover:translate-x-1"
+              >
                 &rarr;
               </span>
             </div>

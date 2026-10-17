@@ -229,7 +229,7 @@ export default function TargetSizeTool({ targetKb: targetKbProp, locale }: Targe
                 key={fmt}
                 type="button"
                 onClick={() => setFormat(fmt)}
-                className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition ${
+                className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium whitespace-nowrap transition ${
                   format === fmt ? 'bg-taccent text-white shadow-sm' : 'text-tmuted hover:text-tink'
                 }`}
               >

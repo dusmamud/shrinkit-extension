@@ -303,7 +303,7 @@ export default function ResultPanel({
                     type="button"
                     data-testid={`download-${item.id}`}
                     onClick={() => onDownload(item)}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-l-[8px] bg-[var(--ed-accent)] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0257bf] active:scale-[0.99] sm:text-base"
+                    className="inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-l-[8px] bg-[var(--ed-accent)] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0257bf] active:scale-[0.99] sm:text-base"
                   >
                     <DownloadIcon size={18} />
                     <span>{t(locale, 'result.download')}</span>
@@ -372,7 +372,7 @@ export default function ResultPanel({
 
       {multi && (
         <>
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
             {done.map((item) => (
               <div
                 key={item.id}
@@ -468,7 +468,7 @@ export default function ResultPanel({
               <span className="shrink-0">
                 <WarningIcon size={17} />
               </span>
-              <span className="min-w-0 shrink-0 truncate font-medium">{item.file.name}:</span>{' '}
+              <span className="min-w-0 truncate font-medium">{item.file.name}:</span>{' '}
               <span className="min-w-0 break-words">{item.error}</span>
             </p>
           ))}

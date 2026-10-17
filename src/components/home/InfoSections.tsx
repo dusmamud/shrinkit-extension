@@ -84,9 +84,9 @@ export default function InfoSections({ locale }: InfoSectionsProps) {
   };
 
   return (
-    <div className="mt-5 bg-tband py-[3.125rem] min-[1185px]:py-[4.375rem]">
+    <div className="mt-5 overflow-x-clip bg-tband py-[3.125rem] min-[1185px]:py-[4.375rem]">
       <div className="mx-auto box-border w-full min-w-0 px-4">
-        <div className="relative">
+        <div className="relative min-w-0">
           <div
             ref={wrapperRef}
             onScroll={handleScroll}

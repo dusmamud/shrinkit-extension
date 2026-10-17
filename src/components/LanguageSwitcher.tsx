@@ -16,19 +16,21 @@ const LANGUAGE_LABEL_KEYS: Record<Locale, string> = {
 
 /**
  * Language picker — web header control style: a compact native <select>
- * (h-10, 6px radius, --ed-* tokens) with a short label. The label wraps
- * and the select is max-w-full, so the control can never overflow or
- * clip at narrow widths; native dropdowns are never clipped by ancestors.
- * Labels come from the message catalogs (ext.language_*, localised per
- * the current locale) — no hardcoded labels.
+ * (h-11 = 44px touch target, 6px radius, --ed-* tokens) with a short
+ * label. The wrapper, label, and select are all whitespace-nowrap +
+ * shrink-0, so the control never wraps mid-word or squeezes inside the
+ * header; horizontal padding tightens slightly at lg (px-2.5 → lg:px-2)
+ * to fit the header squeeze budget. Labels come from the message
+ * catalogs (ext.language_*, localised per the current locale) — no
+ * hardcoded labels.
  */
 export function LanguageSwitcher({ locale, onChange }: LanguageSwitcherProps) {
   return (
-    <label className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--ed-ink-2)]">
-      <span className="shrink-0">{t(locale, 'ext.language')}</span>
+    <label className="flex shrink-0 flex-nowrap items-center gap-x-2 whitespace-nowrap text-sm text-[var(--ed-ink-2)]">
+      <span className="shrink-0 whitespace-nowrap">{t(locale, 'ext.language')}</span>
       <select
         aria-label={t(locale, 'ext.language')}
-        className="h-10 min-w-0 max-w-full rounded-[6px] border border-[var(--ed-input-line)] bg-[var(--ed-input-bg)] px-2.5 text-sm text-[var(--ed-ink-2)] outline-none transition focus:border-[var(--ed-accent)]"
+        className="h-11 shrink-0 max-w-full whitespace-nowrap rounded-[6px] border border-[var(--ed-input-line)] bg-[var(--ed-input-bg)] px-2.5 text-sm text-[var(--ed-ink-2)] outline-none transition focus:border-[var(--ed-accent)] lg:px-2"
         onChange={(event) => {
           const next = event.target.value;
           if (next === 'en' || next === 'es' || next === 'pt') {
