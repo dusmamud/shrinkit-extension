@@ -21,7 +21,11 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run test
+      # build MUST come before check:css / check:responsive: both scripts
+      # read .output/chrome-mv3/ and fail when it does not exist yet.
+      # Previous order ran them before build, so CI failed every time
+      # at check:css even though local runs (build first) were green.
+      - run: npm run build
       - run: npm run check:css
       - run: npm run check:responsive
-      - run: npm run build
       - run: npm run zip
