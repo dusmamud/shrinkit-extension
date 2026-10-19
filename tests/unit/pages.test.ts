@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { parseHash } from '../../src/router/hash';
@@ -25,7 +26,7 @@ const ROUTE_PAGE_FILES: Record<string, string> = {
   '*': 'src/pages/NotFoundPage.tsx',
 };
 
-const EXTENSION_ROOT = new URL('../../', import.meta.url).pathname;
+const EXTENSION_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
 function readSource(relativePath: string): string {
   return readFileSync(join(EXTENSION_ROOT, relativePath), 'utf-8');

@@ -4,8 +4,11 @@ import type { Locale } from '../lib/i18n/index';
 import MainResizer from '../components/MainResizer';
 import Hero from '../components/home/Hero';
 import HowItWorks from '../components/home/HowItWorks';
-import InfoSections from '../components/home/InfoSections';
 import ToolsGrid from '../components/home/ToolsGrid';
+import ZeroUploadGuarantee from '../components/home/ZeroUploadGuarantee';
+import ComparisonTable from '../components/home/ComparisonTable';
+import FaqSection from '../components/home/FaqSection';
+import HomeCta from '../components/home/HomeCta';
 
 export interface HomePageProps {
   locale: Locale;
@@ -17,11 +20,9 @@ export interface HomePageProps {
 }
 
 /**
- * Home page, mirroring the web app's home order: Hero + main resizer +
- * HowItWorks + InfoSections + specialized-tools grid. Header/Footer are
- * rendered by the Editor shell, not here. The main tool container is 960px
- * (MainResizer); HowItWorks/ToolsGrid use the web's max-w-6xl and
- * InfoSections the web's 1075px — all capped by the shell's 960px wrapper.
+ * Home page, mirroring the web app's home order:
+ * Hero + main resizer + HowItWorks + ToolsGrid + ZeroUploadGuarantee + ComparisonTable + FaqSection + HomeCta.
+ * Header/Footer are rendered by the Editor shell, not here.
  */
 export default function HomePage({
   locale,
@@ -36,7 +37,7 @@ export default function HomePage({
   }, [preloadError]);
 
   return (
-    <div className="min-w-0 w-full">
+    <div className="w-full min-w-0">
       <Hero locale={locale} />
 
       <section
@@ -75,8 +76,11 @@ export default function HomePage({
       </section>
 
       <HowItWorks locale={locale} />
-      <InfoSections locale={locale} />
       <ToolsGrid locale={locale} />
+      <ZeroUploadGuarantee locale={locale} />
+      <ComparisonTable locale={locale} />
+      <FaqSection locale={locale} />
+      <HomeCta locale={locale} />
     </div>
   );
 }

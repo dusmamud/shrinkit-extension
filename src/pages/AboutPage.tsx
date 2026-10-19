@@ -1,7 +1,6 @@
 /**
- * About page: faithful condensed port of the web app's about page.
- * Copy comes from the existing about.* i18n keys. No Header/Footer —
- * the app shell renders those.
+ * About page: faithful, beautifully styled port of the web app's about page.
+ * Uses exact brand tokens, card container, and verified copy.
  */
 import { t, type Locale } from '../lib/i18n/index';
 
@@ -11,12 +10,12 @@ export interface AboutPageProps {
 
 export function AboutPage({ locale }: AboutPageProps) {
   return (
-    <div className="bg-tband">
-      <div className="mx-auto box-border w-full min-w-0 max-w-[960px] px-4 py-14">
-        <h1 className="text-[2.5rem] font-normal tracking-tight break-words text-tink">
+    <div className="w-full bg-tband py-12 sm:py-16">
+      <div className="mx-auto box-border w-full min-w-0 max-w-3xl px-4">
+        <h1 className="text-3xl font-normal tracking-tight break-words text-tink sm:text-[2.5rem]">
           {t(locale, 'about.title')}
         </h1>
-        <div className="mt-4 space-y-4 text-sm leading-relaxed break-words text-tink2">
+        <div className="mt-6 rounded-xl border border-tdivider bg-tsurface p-6 shadow-sm space-y-4 text-sm leading-relaxed break-words text-tink2 sm:p-7 sm:text-base">
           <p>{t(locale, 'about.body1')}</p>
           <p>{t(locale, 'about.body2')}</p>
         </div>

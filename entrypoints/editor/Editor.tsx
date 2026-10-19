@@ -226,37 +226,39 @@ export default function Editor() {
         currentRoute={route}
       />
 
-      <main id="main-content" className="ed-main py-6 sm:py-8">
-        <div className="ed-main-inner mx-auto w-full max-w-[960px] px-4">
-          {/* Never a blank page: while settings/params load, show a
-              localised loading state instead of an empty main area. */}
-          {!ready && (
+      <main id="main-content" className="ed-main flex-1 w-full min-w-0">
+        {!ready && (
+          <div className="ed-main-inner mx-auto w-full max-w-[960px] px-4 py-8">
             <div className="ed-loading" role="status" aria-live="polite">
               {t(locale, 'ext.processing')}
             </div>
-          )}
+          </div>
+        )}
 
-          {ready && route === '/' && (
-            <HomePage
-              locale={locale}
-              initialFiles={preloadedFiles}
-              onInitialFilesConsumed={() => setPreloadedFiles(null)}
-              preloadError={preloadError}
-            />
-          )}
-          {ready && route === '/tools' && <ToolsHubPage locale={locale} />}
-          {ready && route === '/tools/compress-to-50kb' && <Compress50Page locale={locale} />}
-          {ready && route === '/tools/compress-to-20kb' && <Compress20Page locale={locale} />}
-          {ready && route === '/tools/passport-photo-maker' && <PassportPage locale={locale} />}
-          {ready && route === '/tools/social-media-resizer' && <SocialPage locale={locale} />}
-          {ready && route === '/tools/compare-images' && <ComparePage locale={locale} />}
-          {ready && route === '/about' && <AboutPage locale={locale} />}
-          {ready && route === '/contact' && <ContactPage locale={locale} />}
-          {ready && route === '/privacy' && <PrivacyPage locale={locale} />}
-          {ready && route === '/terms' && <TermsPage locale={locale} />}
-          {ready && route === '/resize' && <ResizePage locale={locale} />}
-          {ready && route === '*' && <NotFoundPage locale={locale} />}
-        </div>
+        {ready && route === '/' && (
+          <HomePage
+            locale={locale}
+            initialFiles={preloadedFiles}
+            onInitialFilesConsumed={() => setPreloadedFiles(null)}
+            preloadError={preloadError}
+          />
+        )}
+        {ready && route === '/tools' && <ToolsHubPage locale={locale} />}
+        {ready && route === '/tools/compress-to-50kb' && <Compress50Page locale={locale} />}
+        {ready && route === '/tools/compress-to-20kb' && <Compress20Page locale={locale} />}
+        {ready && route === '/tools/passport-photo-maker' && <PassportPage locale={locale} />}
+        {ready && route === '/tools/social-media-resizer' && <SocialPage locale={locale} />}
+        {ready && route === '/tools/compare-images' && <ComparePage locale={locale} />}
+        {ready && route === '/about' && <AboutPage locale={locale} />}
+        {ready && route === '/contact' && <ContactPage locale={locale} />}
+        {ready && route === '/privacy' && <PrivacyPage locale={locale} />}
+        {ready && route === '/terms' && <TermsPage locale={locale} />}
+        {ready && route === '/resize' && (
+          <div className="ed-main-inner mx-auto w-full max-w-[960px] px-4 py-6 sm:py-8">
+            <ResizePage locale={locale} />
+          </div>
+        )}
+        {ready && route === '*' && <NotFoundPage locale={locale} />}
       </main>
 
       {/* /resize mirrors the web page: copyright bar only, no footer links. */}

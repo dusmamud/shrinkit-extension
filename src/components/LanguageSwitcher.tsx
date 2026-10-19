@@ -4,6 +4,7 @@ import { t } from '../lib/i18n/index.js';
 export interface LanguageSwitcherProps {
   locale: Locale;
   onChange: (locale: Locale) => void;
+  compact?: boolean;
 }
 
 const LANGUAGE_OPTIONS: Locale[] = ['en', 'es', 'pt'];
@@ -14,17 +15,38 @@ const LANGUAGE_LABEL_KEYS: Record<Locale, string> = {
   pt: 'ext.language_pt',
 };
 
+const COMPACT_LABELS: Record<Locale, string> = {
+  en: 'EN',
+  es: 'ES',
+  pt: 'PT',
+};
+
 /**
- * Language picker — web header control style: a compact native <select>
- * (h-11 = 44px touch target, 6px radius, --ed-* tokens) with a short
- * label. The wrapper, label, and select are all whitespace-nowrap +
- * shrink-0, so the control never wraps mid-word or squeezes inside the
- * header; horizontal padding tightens slightly at lg (px-2.5 → lg:px-2)
- * to fit the header squeeze budget. Labels come from the message
- * catalogs (ext.language_*, localised per the current locale) — no
- * hardcoded labels.
+ * Language picker — supports standard web header style and compact popup mode.
  */
-export function LanguageSwitcher({ locale, onChange }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ locale, onChange, compact = false }: LanguageSwitcherProps) {
+  if (compact) {
+    return (
+      <select
+        aria-label={t(locale, 'ext.language')}
+        className="h-7 shrink-0 cursor-pointer rounded border border-[var(--t-border,#cbd5e1)] bg-[var(--t-surface,#ffffff)] px-2 text-xs font-medium text-[var(--t-ink-2,#1d2939)] outline-none transition hover:border-[var(--t-accent,#016df0)] focus:border-[var(--t-accent,#016df0)]"
+        onChange={(event) => {
+          const next = event.target.value;
+          if (next === 'en' || next === 'es' || next === 'pt') {
+            onChange(next);
+          }
+        }}
+        value={locale}
+      >
+        {LANGUAGE_OPTIONS.map((option) => (
+          <option key={option} value={option}>
+            {COMPACT_LABELS[option]}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
   return (
     <label className="flex shrink-0 flex-nowrap items-center gap-x-2 whitespace-nowrap text-sm text-[var(--ed-ink-2)]">
       <span className="shrink-0 whitespace-nowrap">{t(locale, 'ext.language')}</span>

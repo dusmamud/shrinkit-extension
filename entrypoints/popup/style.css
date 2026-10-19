@@ -375,11 +375,16 @@ body,
 }
 .popup-presets button:hover {
   border-color: var(--t-accent, #016df0);
+  background: var(--t-select-selected-bg, #eaf3ff);
 }
-.popup-presets button.active {
+.popup-presets button.active,
+.popup-presets button.selected,
+.popup-preset-chip.selected {
   background: var(--t-accent, #016df0);
   border-color: var(--t-accent, #016df0);
   color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(1, 109, 240, 0.3);
 }
 
 /* ---- Settings (web order: size + lock + unit, DPI, mode, format/quality/bg) ---- */
@@ -789,7 +794,9 @@ body,
   border-color: #2c4a73;
   color: #60a5fa;
 }
-[data-theme='dark'] .popup-presets button.active {
+[data-theme='dark'] .popup-presets button.active,
+[data-theme='dark'] .popup-presets button.selected,
+[data-theme='dark'] .popup-preset-chip.selected {
   background: #0a84ff;
   border-color: #0a84ff;
   color: #ffffff;

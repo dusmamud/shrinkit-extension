@@ -84,9 +84,10 @@ body {
 }
 
 .ed-main {
-  padding: 24px 0 32px;
   box-sizing: border-box;
   max-width: 100%;
+  min-width: 0;
+  flex: 1;
 }
 
 .ed-main-inner {

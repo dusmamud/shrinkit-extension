@@ -687,6 +687,7 @@ export default function Popup(): React.JSX.Element {
         <span className="popup-header-spacer" />
         <LanguageSwitcher
           locale={locale}
+          compact
           onChange={(next) => {
             setLocale(next);
             void saveSettings({ language: next });
@@ -695,6 +696,7 @@ export default function Popup(): React.JSX.Element {
         <ThemeSwitcher
           theme={settings?.theme ?? 'system'}
           locale={locale}
+          compact
           onChange={(theme) => {
             void saveSettings({ theme });
             applyTheme(theme);
