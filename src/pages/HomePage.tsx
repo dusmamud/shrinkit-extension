@@ -3,12 +3,6 @@ import { t } from '../lib/i18n/index';
 import type { Locale } from '../lib/i18n/index';
 import MainResizer from '../components/MainResizer';
 import Hero from '../components/home/Hero';
-import HowItWorks from '../components/home/HowItWorks';
-import ToolsGrid from '../components/home/ToolsGrid';
-import ZeroUploadGuarantee from '../components/home/ZeroUploadGuarantee';
-import ComparisonTable from '../components/home/ComparisonTable';
-import FaqSection from '../components/home/FaqSection';
-import HomeCta from '../components/home/HomeCta';
 
 export interface HomePageProps {
   locale: Locale;
@@ -20,9 +14,9 @@ export interface HomePageProps {
 }
 
 /**
- * Home page, mirroring the web app's home order:
- * Hero + main resizer + HowItWorks + ToolsGrid + ZeroUploadGuarantee + ComparisonTable + FaqSection + HomeCta.
- * Header/Footer are rendered by the Editor shell, not here.
+ * Minimal Home page:
+ * Clean Hero + Main Resizer tool. Marketing fluff removed for maximum speed and focus.
+ * Header/Footer are rendered by the Editor shell.
  */
 export default function HomePage({
   locale,
@@ -75,12 +69,31 @@ export default function HomePage({
         />
       </section>
 
-      <HowItWorks locale={locale} />
-      <ToolsGrid locale={locale} />
-      <ZeroUploadGuarantee locale={locale} />
-      <ComparisonTable locale={locale} />
-      <FaqSection locale={locale} />
-      <HomeCta locale={locale} />
+      {/* Minimal How It Works anchor link to live web app */}
+      <section
+        id="how-it-works"
+        className="mx-auto max-w-[960px] px-4 pb-12 pt-2 text-center"
+      >
+        <div className="rounded-xl border border-tdivider bg-tsurface px-6 py-5 shadow-xs sm:flex sm:items-center sm:justify-between sm:text-left">
+          <div>
+            <p className="text-sm font-semibold text-tink">
+              {t(locale, 'how.title')}
+            </p>
+            <p className="text-xs text-tmuted mt-0.5">
+              100% in-browser Web Workers &amp; Canvas. No uploads or server processing.
+            </p>
+          </div>
+          <a
+            href="https://shrinkit.dusrel.com/#how-it-works"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-taccent/30 bg-taccent/10 px-3.5 py-1.5 text-xs font-medium text-taccent hover:bg-taccent/20 transition sm:mt-0"
+          >
+            <span>Learn how on shrinkit.dusrel.com</span>
+            <span>&nearr;</span>
+          </a>
+        </div>
+      </section>
     </div>
   );
 }

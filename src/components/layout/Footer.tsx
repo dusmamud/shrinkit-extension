@@ -15,6 +15,7 @@ export interface FooterProps {
 interface FooterLink {
   href: string;
   labelKey: string;
+  external?: boolean;
 }
 
 interface FooterColumn {
@@ -23,16 +24,16 @@ interface FooterColumn {
 }
 
 /**
- * Footer columns, in display order: Product / Tools / Privacy / Reach out.
- * Every link is a plain hash href — no onClick routing.
+ * Footer columns: Product / Tools / Privacy / Reach out.
+ * Informational pages link directly to the authoritative live web app (shrinkit.dusrel.com).
  */
 const COLUMNS: FooterColumn[] = [
   {
     headingKey: 'footer.col_product',
     links: [
       { href: '#/', labelKey: 'footer.resize_image' },
-      { href: '#/#how-it-works', labelKey: 'footer.how_it_works' },
-      { href: '#/about', labelKey: 'footer.about' },
+      { href: 'https://shrinkit.dusrel.com/#how-it-works', labelKey: 'footer.how_it_works', external: true },
+      { href: 'https://shrinkit.dusrel.com/about', labelKey: 'footer.about', external: true },
     ],
   },
   {
@@ -49,13 +50,13 @@ const COLUMNS: FooterColumn[] = [
   {
     headingKey: 'footer.col_privacy',
     links: [
-      { href: '#/privacy', labelKey: 'footer.privacy_policy' },
-      { href: '#/terms', labelKey: 'footer.terms' },
+      { href: 'https://shrinkit.dusrel.com/privacy', labelKey: 'footer.privacy_policy', external: true },
+      { href: 'https://shrinkit.dusrel.com/terms', labelKey: 'footer.terms', external: true },
     ],
   },
   {
     headingKey: 'footer.col_reachout',
-    links: [{ href: '#/contact', labelKey: 'footer.contact_us' }],
+    links: [{ href: 'https://shrinkit.dusrel.com/contact', labelKey: 'footer.contact_us', external: true }],
   },
 ];
 
@@ -116,9 +117,12 @@ export default function Footer({ locale, variant = 'full' }: FooterProps) {
                     <li key={link.href}>
                       <a
                         href={link.href}
+                        target={link.external ? '_blank' : undefined}
+                        rel={link.external ? 'noopener noreferrer' : undefined}
                         className="inline-block py-0.5 text-[0.875rem] font-light text-tink transition-colors hover:text-taccent"
                       >
                         {t(locale, link.labelKey)}
+                        {link.external && <span className="ml-1 text-xs opacity-70">&nearr;</span>}
                       </a>
                     </li>
                   ))}
