@@ -15,9 +15,9 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
-    name: 'ShrinkIt — Image Resizer',
+    name: 'ShrinkIt — Image Resizer by Dusrel',
     description:
-      'Shrink, compress and convert images entirely in your browser. No sign-up, no uploads, no watermarks. 100% private.',
+      'Shrink, compress and convert images entirely in your browser. No sign-up, no uploads, no watermarks. 100% private. A Dusrel product.',
     version: '1.0.0',
     // NOTE: No default_locale here on purpose. ShrinkIt uses its own JSON
     // i18n (src/i18n/messages/en|es|pt.json), NOT chrome.i18n. Chrome
@@ -25,7 +25,7 @@ export default defineConfig({
     // ("Default locale was specified, but _locales subtree is missing").
     permissions: ['storage', 'downloads', 'contextMenus', 'tabs', 'offscreen'],
     host_permissions: ['<all_urls>'],
-    action: { default_title: 'ShrinkIt — Image Resizer' },
+    action: { default_title: 'ShrinkIt — Image Resizer by Dusrel' },
     icons: {
       16: 'icons/icon-16.png',
       32: 'icons/icon-32.png',

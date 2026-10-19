@@ -159,6 +159,7 @@ export default function Popup(): React.JSX.Element {
   const [files, setFiles] = useState<QueuedFile[]>([]);
   const [results, setResults] = useState<ProcessedFile[]>([]);
   const [errors, setErrors] = useState<BannerError[]>([]);
+  const [dragging, setDragging] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [zipping, setZipping] = useState(false);
   const [width, setWidth] = useState('50');
@@ -173,6 +174,7 @@ export default function Popup(): React.JSX.Element {
   const [activePreset, setActivePreset] = useState<Preset | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const errorIdRef = useRef(0);
+  const dragDepthRef = useRef(0);
   const filesRef = useRef<QueuedFile[]>([]);
   filesRef.current = files;
   const resultsRef = useRef<ProcessedFile[]>([]);
@@ -681,7 +683,10 @@ export default function Popup(): React.JSX.Element {
           height={32}
           style={{ maxWidth: 32, maxHeight: 32 }}
         />
-        <strong className="popup-logo-name">{t(locale, 'site.name')}</strong>
+        <span className="popup-logo-wrap">
+          <strong className="popup-logo-name">{t(locale, 'site.name')}</strong>
+          <span className="popup-logo-by">{t(locale, 'header.by_dusrel')}</span>
+        </span>
         <span className="popup-header-spacer" />
         <LanguageSwitcher
           locale={locale}
@@ -712,11 +717,31 @@ export default function Popup(): React.JSX.Element {
       ))}
 
       <div
-        className="popup-dropzone"
+        className={`popup-dropzone${dragging ? ' popup-dropzone-drag' : ''}`}
+        onDragEnter={(ev) => {
+          ev.preventDefault();
+          dragDepthRef.current += 1;
+          setDragging(true);
+        }}
+        onDragLeave={(ev) => {
+          ev.preventDefault();
+          dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+          if (dragDepthRef.current === 0) setDragging(false);
+        }}
+        onDragOver={(ev) => {
+          ev.preventDefault();
+          setDragging(true);
+        }}
+        onDrop={(ev) => {
+          ev.preventDefault();
+          dragDepthRef.current = 0;
+          setDragging(false);
+          addFiles(ev.dataTransfer.files);
+        }}
         onClick={() => fileInputRef.current?.click()}
         role="button"
         tabIndex={0}
-        aria-label={t(locale, 'dropzone.select')}
+        aria-label={t(locale, 'popup.dropzone_label')}
         onKeyDown={(ev) => {
           if (ev.key === 'Enter' || ev.key === ' ') {
             ev.preventDefault();
@@ -724,6 +749,21 @@ export default function Popup(): React.JSX.Element {
           }
         }}
       >
+        {/* Dashed border drawn as an SVG rect (web Dropzone style, scaled). */}
+        <svg className="popup-dropzone-border" aria-hidden="true">
+          <rect
+            x="2"
+            y="2"
+            rx="14"
+            fill="none"
+            stroke="var(--t-dash, #52a0ff)"
+            strokeWidth={dragging ? 3.5 : 2}
+            strokeDasharray="6 10"
+            strokeLinecap="round"
+            style={{ width: 'calc(100% - 4px)', height: 'calc(100% - 4px)' }}
+          />
+        </svg>
+
         {processing && (
           <div className="popup-processing">
             <span className="dots">{t(locale, 'dropzone.processing')}</span>
@@ -734,8 +774,11 @@ export default function Popup(): React.JSX.Element {
           <div className="popup-dropzone-icon">
             <UploadMark />
           </div>
-          <p className="popup-dropzone-title">Select Images to Resize</p>
-          <p className="popup-paste">Click to choose files or paste (Ctrl+V)</p>
+          <p className="popup-dropzone-title">
+            {t(locale, 'dropzone.title_a')}{' '}
+            <span className="popup-browse">{t(locale, 'dropzone.browse')}</span>{' '}
+            <span className="popup-paste">{t(locale, 'dropzone.paste_hint')}</span>
+          </p>
           <span className="popup-select-btn">{t(locale, 'dropzone.select')}</span>
           <p className="popup-muted">{t(locale, 'popup.dropzone_hint', { max: MAX_FILES })}</p>
         </div>
@@ -750,14 +793,6 @@ export default function Popup(): React.JSX.Element {
             ev.target.value = '';
           }}
         />
-      </div>
-
-      <div className="popup-tab-hint">
-        <span>Need full drag &amp; drop?</span>
-        <button type="button" onClick={openEditor}>
-          <span>Open in Full Tab</span>
-          <span>&nearr;</span>
-        </button>
       </div>
       <p className="popup-formats">{t(locale, 'popup.formats_hint')}</p>
 

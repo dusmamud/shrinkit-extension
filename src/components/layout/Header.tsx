@@ -120,6 +120,9 @@ export default function Header({
           <span className="whitespace-nowrap text-[1.35rem] font-medium tracking-tight text-tink">
             {t(locale, 'site.name')}
           </span>
+          <span className="-ml-1 hidden text-[0.65rem] font-light tracking-wide text-tink/60 sm:inline">
+            {t(locale, 'header.by_dusrel')}
+          </span>
         </a>
 
         {/* Desktop nav */}

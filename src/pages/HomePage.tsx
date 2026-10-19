@@ -70,10 +70,15 @@ export default function HomePage({
       </section>
 
       {/* Minimal How It Works anchor link to live web app */}
-      <section id="how-it-works" className="mx-auto max-w-[960px] px-4 pb-12 pt-2 text-center">
+      <section
+        id="how-it-works"
+        className="mx-auto max-w-[960px] px-4 pb-12 pt-2 text-center"
+      >
         <div className="rounded-xl border border-tdivider bg-tsurface px-6 py-5 shadow-xs sm:flex sm:items-center sm:justify-between sm:text-left">
           <div>
-            <p className="text-sm font-semibold text-tink">{t(locale, 'how.title')}</p>
+            <p className="text-sm font-semibold text-tink">
+              {t(locale, 'how.title')}
+            </p>
             <p className="text-xs text-tmuted mt-0.5">
               100% in-browser Web Workers &amp; Canvas. No uploads or server processing.
             </p>

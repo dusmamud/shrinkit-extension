@@ -1,5 +1,7 @@
 # ShrinkIt — Image Resizer (Chrome Extension)
 
+> A **Dusrel** product — part of the [Dusrel](https://dusrel.com) family of free, privacy-first tools.
+
 Shrink, compress, and convert images entirely in your browser. No sign-up, no uploads, no watermarks. 100% private.
 
 ShrinkIt is a Chrome extension (Manifest V3, built with WXT + React + TypeScript + Tailwind CSS). It has one purpose: **resize, compress, and convert images you select, locally on your device.**

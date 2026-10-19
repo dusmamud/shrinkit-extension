@@ -516,7 +516,16 @@ export default function Options() {
 
       <footer className="opt-footer border-t border-[var(--ed-line)]">
         <p className="mx-auto w-full max-w-[960px] px-4 py-4 text-center text-sm text-[var(--ed-muted)]">
-          {t(locale, 'footer.rights', { year: new Date().getFullYear() })}
+          {t(locale, 'footer.rights', { year: new Date().getFullYear() })}{' '}
+          <span aria-hidden="true">·</span>{' '}
+          <a
+            href="https://dusrel.com"
+            target="_blank"
+            rel="noreferrer"
+            className="underline-offset-2 transition-colors hover:text-[var(--ed-accent)] hover:underline"
+          >
+            {t(locale, 'footer.by_dusrel')}
+          </a>
         </p>
       </footer>
     </div>

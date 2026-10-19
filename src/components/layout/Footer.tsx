@@ -32,11 +32,7 @@ const COLUMNS: FooterColumn[] = [
     headingKey: 'footer.col_product',
     links: [
       { href: '#/', labelKey: 'footer.resize_image' },
-      {
-        href: 'https://shrinkit.dusrel.com/#how-it-works',
-        labelKey: 'footer.how_it_works',
-        external: true,
-      },
+      { href: 'https://shrinkit.dusrel.com/#how-it-works', labelKey: 'footer.how_it_works', external: true },
       { href: 'https://shrinkit.dusrel.com/about', labelKey: 'footer.about', external: true },
     ],
   },
@@ -54,23 +50,13 @@ const COLUMNS: FooterColumn[] = [
   {
     headingKey: 'footer.col_privacy',
     links: [
-      {
-        href: 'https://shrinkit.dusrel.com/privacy',
-        labelKey: 'footer.privacy_policy',
-        external: true,
-      },
+      { href: 'https://shrinkit.dusrel.com/privacy', labelKey: 'footer.privacy_policy', external: true },
       { href: 'https://shrinkit.dusrel.com/terms', labelKey: 'footer.terms', external: true },
     ],
   },
   {
     headingKey: 'footer.col_reachout',
-    links: [
-      {
-        href: 'https://shrinkit.dusrel.com/contact',
-        labelKey: 'footer.contact_us',
-        external: true,
-      },
-    ],
+    links: [{ href: 'https://shrinkit.dusrel.com/contact', labelKey: 'footer.contact_us', external: true }],
   },
 ];
 
@@ -118,6 +104,16 @@ export default function Footer({ locale, variant = 'full' }: FooterProps) {
             </a>
             <p className="mt-3 text-[0.875rem] font-light leading-relaxed text-tink">
               {t(locale, 'footer.tagline')}
+            </p>
+            <p className="mt-2 text-[0.8rem] font-light leading-relaxed">
+              <a
+                href="https://dusrel.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-tink/70 underline-offset-2 transition-colors hover:text-taccent hover:underline"
+              >
+                {t(locale, 'footer.by_dusrel')}
+              </a>
             </p>
           </div>
           <div className="flex flex-col gap-8 sm:flex-row sm:gap-16">

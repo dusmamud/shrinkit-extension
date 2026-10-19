@@ -15,17 +15,7 @@ export function TermsPage({ locale }: TermsPageProps) {
       <div className="mx-auto box-border w-full min-w-0 max-w-2xl px-4 text-center">
         <div className="rounded-2xl border border-tdivider bg-tsurface p-8 shadow-sm sm:p-10">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-taccent/10 text-taccent">
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
               <line x1="16" y1="13" x2="8" y2="13" />
@@ -39,8 +29,7 @@ export function TermsPage({ locale }: TermsPageProps) {
           </h1>
 
           <p className="mt-3 text-sm leading-relaxed text-tmuted sm:text-base">
-            ShrinkIt is a free, client-side utility provided as-is without warranties. By using the
-            software, you agree to our standard terms of service.
+            ShrinkIt is a free, client-side utility provided as-is without warranties. By using the software, you agree to our standard terms of service.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
