@@ -70,10 +70,15 @@ export default function HomePage({
       </section>
 
       {/* Minimal How It Works anchor link to live web app */}
-      <section id="how-it-works" className="mx-auto max-w-[960px] px-4 pb-12 pt-2 text-center">
+      <section
+        id="how-it-works"
+        className="mx-auto max-w-[960px] px-4 pb-12 pt-2 text-center"
+      >
         <div className="rounded-xl border border-tdivider bg-tsurface px-6 py-5 shadow-xs sm:flex sm:items-center sm:justify-between sm:text-left">
           <div>
-            <p className="text-sm font-semibold text-tink">{t(locale, 'how.title')}</p>
+            <p className="text-sm font-semibold text-tink">
+              {t(locale, 'tools.how_title')}
+            </p>
             <p className="text-xs text-tmuted mt-0.5">
               100% in-browser Web Workers &amp; Canvas. No uploads or server processing.
             </p>
@@ -85,7 +90,7 @@ export default function HomePage({
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-taccent/30 bg-taccent/10 px-3.5 py-1.5 text-xs font-medium text-taccent hover:bg-taccent/20 transition sm:mt-0"
           >
             <span>Learn how on shrinkit.dusrel.com</span>
-            <span>&nearr;</span>
+            <span>↗</span>
           </a>
         </div>
       </section>

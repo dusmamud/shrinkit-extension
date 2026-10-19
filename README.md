@@ -124,7 +124,7 @@ Full statement: [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+All Rights Reserved (proprietary, source-viewable only) — see [LICENSE](LICENSE).
 
 ```
 

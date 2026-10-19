@@ -32,11 +32,7 @@ const COLUMNS: FooterColumn[] = [
     headingKey: 'footer.col_product',
     links: [
       { href: '#/', labelKey: 'footer.resize_image' },
-      {
-        href: 'https://shrinkit.dusrel.com/#how-it-works',
-        labelKey: 'footer.how_it_works',
-        external: true,
-      },
+      { href: 'https://shrinkit.dusrel.com/#how-it-works', labelKey: 'footer.how_it_works', external: true },
       { href: 'https://shrinkit.dusrel.com/about', labelKey: 'footer.about', external: true },
     ],
   },
@@ -54,23 +50,13 @@ const COLUMNS: FooterColumn[] = [
   {
     headingKey: 'footer.col_privacy',
     links: [
-      {
-        href: 'https://shrinkit.dusrel.com/privacy',
-        labelKey: 'footer.privacy_policy',
-        external: true,
-      },
+      { href: 'https://shrinkit.dusrel.com/privacy', labelKey: 'footer.privacy_policy', external: true },
       { href: 'https://shrinkit.dusrel.com/terms', labelKey: 'footer.terms', external: true },
     ],
   },
   {
     headingKey: 'footer.col_reachout',
-    links: [
-      {
-        href: 'https://shrinkit.dusrel.com/contact',
-        labelKey: 'footer.contact_us',
-        external: true,
-      },
-    ],
+    links: [{ href: 'https://shrinkit.dusrel.com/contact', labelKey: 'footer.contact_us', external: true }],
   },
 ];
 
@@ -146,7 +132,7 @@ export default function Footer({ locale, variant = 'full' }: FooterProps) {
                         className="inline-block py-0.5 text-[0.875rem] font-light text-tink transition-colors hover:text-taccent"
                       >
                         {t(locale, link.labelKey)}
-                        {link.external && <span className="ml-1 text-xs opacity-70">&nearr;</span>}
+                        {link.external && <span className="ml-1 text-xs opacity-70">↗</span>}
                       </a>
                     </li>
                   ))}

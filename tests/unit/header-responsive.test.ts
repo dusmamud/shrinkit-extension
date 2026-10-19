@@ -22,10 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { ROUTES } from '../../src/router/routes';
 
 function readSource(relativePath: string): string {
-  return readFileSync(
-    fileURLToPath(new URL(`../../${relativePath}`, import.meta.url)),
-    'utf8',
-  ).replace(/\r\n/g, '\n');
+  return readFileSync(fileURLToPath(new URL(`../../${relativePath}`, import.meta.url)), 'utf8').replace(/\r\n/g, '\n');
 }
 
 /** Strip block comments so class assertions cannot match prose in comments. */
