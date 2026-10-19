@@ -734,12 +734,8 @@ export default function Popup(): React.JSX.Element {
           <div className="popup-dropzone-icon">
             <UploadMark />
           </div>
-          <p className="popup-dropzone-title">
-            Select Images to Resize
-          </p>
-          <p className="popup-paste">
-            Click to choose files or paste (Ctrl+V)
-          </p>
+          <p className="popup-dropzone-title">Select Images to Resize</p>
+          <p className="popup-paste">Click to choose files or paste (Ctrl+V)</p>
           <span className="popup-select-btn">{t(locale, 'dropzone.select')}</span>
           <p className="popup-muted">{t(locale, 'popup.dropzone_hint', { max: MAX_FILES })}</p>
         </div>

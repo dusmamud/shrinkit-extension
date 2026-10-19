@@ -125,9 +125,7 @@ export default function FaqSection({ locale }: FaqSectionProps) {
           >
             {content.heading}
           </h2>
-          <p className="mt-2 text-sm text-tmuted sm:text-base">
-            {content.subheading}
-          </p>
+          <p className="mt-2 text-sm text-tmuted sm:text-base">{content.subheading}</p>
         </div>
 
         <div className="space-y-3">
