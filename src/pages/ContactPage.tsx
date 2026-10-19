@@ -16,7 +16,17 @@ export function ContactPage({ locale }: ContactPageProps) {
       <div className="mx-auto box-border w-full min-w-0 max-w-2xl px-4 text-center">
         <div className="rounded-2xl border border-tdivider bg-tsurface p-8 shadow-sm sm:p-10">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-taccent/10 text-taccent">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
               <polyline points="22,6 12,13 2,6" />
             </svg>
@@ -27,7 +37,8 @@ export function ContactPage({ locale }: ContactPageProps) {
           </h1>
 
           <p className="mt-3 text-sm leading-relaxed text-tmuted sm:text-base">
-            Have questions, feedback, or need help? You can email us directly or visit our official contact form.
+            Have questions, feedback, or need help? You can email us directly or visit our official
+            contact form.
           </p>
 
           <div className="mt-6 rounded-xl border border-tdash bg-tband/40 p-4">

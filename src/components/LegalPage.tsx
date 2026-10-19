@@ -14,9 +14,7 @@ export function LegalPage({ doc, notice, fullTextUrl }: LegalPageProps) {
         <h1 className="text-3xl font-normal tracking-tight break-words text-tink sm:text-[2.5rem]">
           {doc.title}
         </h1>
-        <p className="mt-3 text-sm font-light text-tink2">
-          Last updated: {doc.lastUpdated}
-        </p>
+        <p className="mt-3 text-sm font-light text-tink2">Last updated: {doc.lastUpdated}</p>
 
         {notice && (
           <p className="mt-4 rounded-[6px] border border-tdash bg-tsurface px-5 py-4 text-sm font-light leading-relaxed break-words text-tink2">
@@ -114,7 +112,10 @@ export function LegalPage({ doc, notice, fullTextUrl }: LegalPageProps) {
                   }
                   if (block.kind === 'table') {
                     return (
-                      <div key={blockKey} className="my-4 overflow-x-auto rounded-lg border border-tdivider">
+                      <div
+                        key={blockKey}
+                        className="my-4 overflow-x-auto rounded-lg border border-tdivider"
+                      >
                         <table className="w-full border-collapse text-left text-[0.875rem] font-light leading-relaxed text-tink2 sm:text-[0.9375rem]">
                           <thead className="bg-tsurface2 font-medium text-tink">
                             <tr>
@@ -165,7 +166,14 @@ export function LegalPage({ doc, notice, fullTextUrl }: LegalPageProps) {
               className="inline-flex items-center gap-1.5 font-medium text-taccent underline underline-offset-2 hover:text-[#0257bf]"
             >
               <span>Visit full policy at shrinkit.dusrel.com</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
               </svg>
             </a>

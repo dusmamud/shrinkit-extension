@@ -153,10 +153,7 @@ export default function ComparisonTable({ locale }: ComparisonTableProps) {
   const content = CONTENT[locale] ?? CONTENT.en;
 
   return (
-    <section
-      className="w-full bg-tpage py-12 sm:py-16"
-      aria-labelledby="comparison-heading"
-    >
+    <section className="w-full bg-tpage py-12 sm:py-16" aria-labelledby="comparison-heading">
       <div className="mx-auto box-border w-full min-w-0 max-w-5xl px-4 sm:px-6">
         <div className="mx-auto mb-10 max-w-2xl text-center">
           <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-taccent/20 bg-taccent/10 px-3 py-1 text-xs font-semibold text-taccent">
@@ -181,9 +178,7 @@ export default function ComparisonTable({ locale }: ComparisonTableProps) {
           >
             {content.heading}
           </h2>
-          <p className="mt-2 text-sm text-tmuted sm:text-base">
-            {content.subheading}
-          </p>
+          <p className="mt-2 text-sm text-tmuted sm:text-base">{content.subheading}</p>
         </div>
 
         <div className="overflow-hidden rounded-2xl border border-tborderfaint bg-tsurface shadow-sm">
@@ -216,10 +211,7 @@ export default function ComparisonTable({ locale }: ComparisonTableProps) {
               </thead>
               <tbody className="divide-y divide-tborderfaint text-xs sm:text-sm">
                 {content.rows.map((row, idx) => (
-                  <tr
-                    key={`cmp-row-${idx}`}
-                    className="transition-colors hover:bg-tsurface2/40"
-                  >
+                  <tr key={`cmp-row-${idx}`} className="transition-colors hover:bg-tsurface2/40">
                     <td className="px-4 py-3.5 font-semibold text-tink whitespace-nowrap sm:px-6 sm:whitespace-normal">
                       {row.feature}
                     </td>

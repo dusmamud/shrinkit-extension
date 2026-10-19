@@ -46,7 +46,8 @@ const CONTENT = {
     testLabel: 'Compruébalo tú mismo:',
     testPress: 'Pulsa',
     testOrClick: 'o clic derecho → Inspeccionar →',
-    testTail: 'pestaña. Redimensiona cualquier archivo y comprueba que nunca se envía ninguna subida.',
+    testTail:
+      'pestaña. Redimensiona cualquier archivo y comprueba que nunca se envía ninguna subida.',
     cards: [
       {
         title: 'Procesado totalmente en tu dispositivo',
@@ -147,9 +148,7 @@ export default function ZeroUploadGuarantee({ locale }: ZeroUploadGuaranteeProps
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-tink sm:text-base">
-                      {card.title}
-                    </h3>
+                    <h3 className="text-sm font-semibold text-tink sm:text-base">{card.title}</h3>
                     <p className="mt-0.5 text-xs leading-relaxed text-tmuted sm:text-sm">
                       {card.desc}
                     </p>
