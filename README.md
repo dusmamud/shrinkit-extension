@@ -214,3 +214,4 @@ npm run check:responsive   # needs `npm run build` first for the built-CSS part
 > marker text; source-level absence is the real guard — see
 > [VERIFICATION_REPORT.md](VERIFICATION_REPORT.md).
 > Tip: The toolbar popup is for quick resizes of 1–5 images; for up to 50 images at a time, use the Full Editor's main resizer instead.
+> Tip: Right-click any image on any page and choose **Resize with ShrinkIt** to send it straight to the editor — no need to save the image first.
