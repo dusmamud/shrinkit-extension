@@ -216,3 +216,4 @@ npm run check:responsive   # needs `npm run build` first for the built-CSS part
 > Tip: The toolbar popup is for quick resizes of 1–5 images; for up to 50 images at a time, use the Full Editor's main resizer instead.
 > Tip: Right-click any image on any page and choose **Resize with ShrinkIt** to send it straight to the editor — no need to save the image first.
 > Tip: The extension is available in English, Spanish, and Portuguese (en / es / pt) — switch language from the editor header.
+> Tip: Your settings (language, theme, defaults) sync across your Chrome browsers via `chrome.storage.sync` — images are never synced or stored.
