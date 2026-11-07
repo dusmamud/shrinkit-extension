@@ -218,3 +218,4 @@ npm run check:responsive   # needs `npm run build` first for the built-CSS part
 > Tip: The extension is available in English, Spanish, and Portuguese (en / es / pt) — switch language from the editor header.
 > Tip: Your settings (language, theme, defaults) sync across your Chrome browsers via `chrome.storage.sync` — images are never synced or stored.
 > Tip: Supported inputs are JPG / JPEG, PNG, GIF, WebP, BMP, and AVIF; outputs are JPG, PNG, WebP, and GIF — SVG is NOT supported.
+> Tip: Build a distributable package with `npm run zip` after `npm run build` — it produces a `.zip` for the Chrome Web Store from the `.output/chrome-mv3` build.
